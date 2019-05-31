@@ -1,0 +1,645 @@
+<template>
+  <div class="createdchartbox">
+    <div
+      class="allcon dragbox"
+      id="dragbox"
+    >
+      <div
+        class="dragdom querybox"
+        v-for="(item, index) in querys"
+        :key="item.key"
+        :id="item.key"
+        :class="('querys' + index)"
+      >
+        <div class="content">
+          <span class="inputlabel">{{item.label}}</span>
+          <div
+            class="inputdiv"
+            v-if="item.type === 'input'"
+          >
+            <div
+              class="changewidthdiv"
+              :id="('queryzoombox' + item.other)"
+            >
+              <el-input v-model="item.value"></el-input>
+            </div>
+          </div>
+          <div
+            class="inputdiv"
+            v-if="item.type === 'select'"
+          >
+            <div
+              class="changewidthdiv"
+              :id="('queryzoombox' + item.other)"
+            >
+              <el-select
+                v-model="item.value"
+                clearable
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="items in item.option"
+                  :key="items.value"
+                  :label="items.label"
+                  :value="items.value"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div
+            class="inputdiv"
+            v-if="item.type === 'date'"
+          >
+            <div
+              class="changewidthdiv"
+              :id="('queryzoombox' + item.other)"
+            >
+              <el-date-picker
+                format="yyyyMMdd"
+                v-model="item.value"
+                type="daterange"
+                placeholder="选择日期范围"
+              ></el-date-picker>
+            </div>
+          </div>
+          <div
+            class="inputdiv"
+            v-if="item.type === 'val'"
+          >
+            <!--<el-input v-if="item.value === ''" v-model="item.value"></el-input> -->
+            <div
+              class="changewidthdiv"
+              :id="('queryzoombox' + item.other)"
+            >
+              <span class="valspan"> {{item.value}} </span>
+            </div>
+          </div>
+        </div>
+        <div class="handle handlequery"></div>
+      </div>
+      <div
+        class="dragdom textbox"
+        v-for="(item, index) in text"
+        :key="item.key"
+        :id="item.key"
+        :class="('text' + index)"
+      >
+        <div class="content">
+          <span
+            class="textshow"
+            :style="item.fontsize"
+          >{{item.data}}</span>
+        </div>
+        <div class="handle handlequery"></div>
+      </div>
+      <div
+        class="dragdom chartbox"
+        v-for="(item, index) in charts"
+        :key="item.key"
+        :id="item.key"
+        :class="('charts' + index)"
+      >
+        <!-- <div class="handle"></div>
+             <div class="dragall" :id="('chartszoom' + item.other)"></div> -->
+        <div class="content">
+          <chart
+            :options="item.option"
+            auto-resize
+            :ref="item.key"
+          ></chart>
+        </div>
+      </div>
+      <div
+        class="dragdom listbox"
+        v-for="(item, index) in list"
+        :key="item.key"
+        :id="item.key"
+        :class="('list' + index)"
+      >
+        <div class="content">
+          <el-table
+            :data="item.data.rows"
+            border
+            height="270"
+          >
+            <el-table-column
+              v-for="col in item.data.cols"
+              :key="col.key"
+              :prop="col.key"
+              :label="col.label"
+              show-overflow-tooltip
+            >
+            </el-table-column>
+          </el-table>
+          <div class="paginationbox">
+            <el-pagination
+              :total="item.data.total"
+              :current-page="item.data.offset"
+              :page-size="item.data.pageSize"
+              layout="total, prev, pager, next, jumper"
+            >
+            </el-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<style lang="scss">
+.createdchartbox {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  padding: 2px;
+  overflow: auto;
+  .dragbox {
+    width: 100%;
+    position: relative;
+    height: calc(100% - 10px);
+  }
+  .dragdom {
+    position: absolute;
+  }
+  .chartbox {
+    height: 250px;
+    width: 300px;
+    background: #fff;
+    // border: 1px solid #ccc;
+    box-shadow: 0px 0px 25px #f7f7f7;
+    .content {
+      width: 100%;
+      height: 100%;
+    }
+    .echarts {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+  .listbox {
+    height: 300px;
+    width: 98%;
+    border: 1px solid #ccc;
+    .content {
+      width: 100%;
+      height: 100%;
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .msgbox {
+      width: 100%;
+      height: 100%;
+      background-color: rgba(250, 250, 250, 0.7);
+      position: absolute;
+      top: 0;
+      left: 0;
+      .msgconter {
+        width: 90%;
+        height: 120px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+        // background-color: #fff;
+        overflow: auto;
+      }
+    }
+  }
+  .querybox {
+    // height: 30px;
+    background: #fff;
+    .content {
+      height: 100%;
+      .inputlabel {
+        float: left;
+        height: 30px;
+        color: #000;
+        line-height: 30px;
+        margin-right: 5px;
+      }
+      .inputdiv {
+        float: left;
+      }
+      .el-input {
+        font-size: 12px;
+      }
+      .el-input__inner {
+        border: 1px solid blue;
+        height: 30px;
+        border-radius: 0;
+      }
+      .input-new-tag {
+        .el-input__inner {
+          border: 1px solid #bfcbd9;
+          border-radius: 4px;
+        }
+      }
+      .textshow {
+        color: #000;
+      }
+      .valspan {
+        line-height: 32px;
+      }
+    }
+  }
+  .dragall {
+    bottom: 0px;
+    right: 0px;
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: url("../../assets/img/iconhead/Dragiconleft.png");
+    background-size: 100% 100%;
+    cursor: nw-resize;
+  }
+  .textbox {
+    //height: 30px;
+    background: #fff;
+    box-shadow: 0px 0px 25px #f7f7f7;
+    .content {
+      height: 100%;
+      .inputlabel {
+        float: left;
+        height: 30px;
+        color: #000;
+        line-height: 30px;
+        margin-right: 5px;
+      }
+      .inputdiv {
+        float: left;
+      }
+      .el-input {
+        font-size: 12px;
+      }
+      .el-input__inner {
+        border: 1px solid blue;
+        height: 30px;
+        border-radius: 0;
+      }
+      .input-new-tag {
+        .el-input__inner {
+          border: 1px solid #bfcbd9;
+          border-radius: 4px;
+        }
+      }
+      .textshow {
+        color: #000;
+      }
+      .valspan {
+        line-height: 32px;
+      }
+    }
+  }
+  .handle {
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: url("../../assets/img/imgchart/wghandel.png");
+    background-size: 100% 100%;
+    cursor: move;
+    opacity: 0.2;
+  }
+  .handlequery {
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    margin: auto;
+    top: -35px;
+    background: url("../../assets/img/imgchart/but.png");
+    background-size: 100% 100%;
+    cursor: move;
+    opacity: 0;
+  }
+  .handle:hover {
+    opacity: 1;
+  }
+  .handlequery:hover {
+    opacity: 0.9;
+  }
+}
+</style>
+<script>
+import Draggabilly from 'draggabilly';
+import 'echarts/lib/chart/bar';
+import 'echarts/lib/chart/pie';
+import 'echarts/lib/chart/line';
+// import echarts from 'echarts';
+import {
+  getDragComponent,
+  dragImageData,
+  dragListData
+} from '@/services/query';
+// select 'beijing' as z ,'01' as x,'100' as y from dual union all select 'beijing' as z ,'02' as x,'800' as y from dual union all select 'beijing' as z ,'03' as x,'300' as y from dual union all select 'beijing' as z ,'04' as x,'600' as y from dual union all select 'beijing' as z ,'05' as x,'100' as y from dual union all select 'beijing' as z ,'06' as x,'900' as y from dual union all select 'beijing' as z ,'07' as x,'200' as y from dual union all select 'beijing' as z ,'08' as x,'600' as y from dual union all select 'shanghai' as z ,'01' as x,'100' as y from dual union all select 'shanghai' as z ,'02' as x,'400' as y from dual union all select 'shanghai' as z ,'03' as x,'700' as y from dual union all select 'shanghai' as z ,'04' as x,'200' as y from dual union all select 'shanghai' as z ,'05' as x,'500' as y from dual union all select 'shanghai' as z ,'06' as x,'800' as y from dual union all select 'shanghai' as z ,'07' as x,'300' as y from dual  union all select 'shanghai' as z ,'08' as x,'600' as y from dual
+// select count(1) from j_report_dragcomponent
+// select name as key,label as value from j_report_model where primary_key = 'componentType'
+// select 'beijing' as city ,'01' as month,'100' as data from dual union all  select 'beijing' as city ,'02' as month,'800' as data from dual union all select 'beijing' as city ,'03' as month,'300' as data from dual union all select 'beijing' as city ,'04' as month,'600' as data from dual union all select 'beijing' as city ,'05' as month,'100' as data from dual union all select 'beijing' as city ,'06' as month,'900' as data from dual union all select 'beijing' as city ,'07' as month,'200' as data from dual union all  select 'beijing' as city ,'08' as month,'600' as data from dual
+// select 'beijing' as city ,'01' as month,'100' as data from dual union all select 'beijing' as city ,'02' as month,'800' as data from dual union all select 'beijing' as city ,'03' as month,'300' as data from dual union all select 'beijing' as city ,'04' as month,'600' as data from dual union all select 'beijing' as city ,'05' as month,'100' as data from dual union all select 'beijing' as city ,'06' as month,'900' as data from dual union all select 'beijing' as city ,'07' as month,'200' as data from dual union all select 'beijing' as city ,'08' as month,'600' as data from dual union all select 'shanghai' as city ,'01' as month,'100' as data from dual union all select 'shanghai' as city ,'02' as month,'400' as data from dual union all select 'shanghai' as city ,'03' as month,'700' as data from dual union all select 'shanghai' as city ,'04' as month,'200' as data from dual union all select 'shanghai' as city ,'05' as month,'500' as data from dual union all select 'shanghai' as city ,'06' as month,'800' as data from dual union all select 'shanghai' as city ,'07' as month,'300' as data from dual  union all select 'shanghai' as city ,'08' as month,'600' as data from dual
+export default {
+  data() {
+    return {
+      id: this.$route.params.id,
+      querys: [],
+      charts: [],
+      text: [],
+      list: [],
+      option: {
+        color: ['#0c51ec', '#e730bb', '#61a0a8', '#d48265', '#91c7ae', '#749f83', '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'],
+        dataZoom: [{
+          type: 'inside',
+          realtime: true,
+        }],
+        grid: {
+          bottom: 30,
+        },
+        legend: {
+          data: ['数据1', '数据2'],
+          top: 20,
+        },
+        xAxis: [{
+          type: 'category',
+          data: [],
+        }],
+        yAxis: {
+          type: 'value',
+          splitLine: {
+            show: false
+          }
+        },
+        series: []
+      }
+    }
+  },
+  mounted() {
+    let dragDom = this.dragDom = new Drag();
+    dragDom.listenevent();
+    this.GetDragComponent();
+  },
+  methods: {
+    // 设置初始位置
+    initposition() {
+      for (let item of this.querys) {
+        if (item.top !== '') {
+          $(`#${item.key}`).css({
+            top: item.position.top,
+            left: item.position.left
+          })
+        }
+        if (item.width !== '') {
+          $(`#${item.key} .changewidthdiv`).css({
+            width: item.position.width,
+          });
+        }
+      }
+      for (let i in this.charts) {
+        let css = {};
+        if (this.charts[i].width !== '') {
+          css.width = this.charts[i].position.width;
+          css.height = this.charts[i].position.height;
+        }
+        if (this.charts[i].top !== '') {
+          css.top = this.charts[i].position.top;
+          css.left = this.charts[i].position.left;
+        }
+        $(`#${this.charts[i].key}`).css(css);
+        this.$refs[`${this.charts[i].key}`][0].resize();
+      }
+      for (let i in this.list) {
+        // console.log('this.list[i]', this.list[i]);
+        let css = {};
+        if (this.list[i].width !== '') {
+          css.width = this.list[i].position.width;
+          css.height = this.list[i].position.height;
+        }
+        if (this.list[i].top !== '') {
+          css.top = this.list[i].position.top;
+          css.left = this.list[i].position.left;
+        }
+        $(`#${this.list[i].key}`).css(css);
+      }
+      for (let item of this.text) {
+        if (item.top !== '') {
+          $(`#${item.key}`).css({
+            top: item.position.top,
+            left: item.position.left
+          })
+        }
+      }
+    },
+    // 得到数据库数据，作为初始化数据
+    GetDragComponent() {
+      getDragComponent({
+        uniflag: this.id,
+        dragType: ''
+      }).then((res) => {
+        if (res.status === 200) {
+          console.log('接口返回数据------：', res.data);
+          this.delinitdata(res.data);
+        }
+      })
+    },
+    // 处理数据
+    delinitdata(data) {
+      let param = data;
+      for (let i in param.charts) {
+        param.charts[i].position = JSON.parse(param.charts[i].position);
+        param.charts[i].data = JSON.parse(param.charts[i].data);
+        let str = param.charts[i].sql.replace(/[\r\n]/g, ' ');
+        param.charts[i].sql = JSON.parse(str);
+        param.charts[i].option = JSON.parse(JSON.stringify(this.option));
+      }
+      for (let i in param.text) {
+        param.text[i].position = JSON.parse(param.text[i].position);
+        param.text[i].fontsize = JSON.parse(param.text[i].fontsize);
+      }
+      for (let i in param.query) {
+        param.query[i].position = JSON.parse(param.query[i].position);
+      }
+      for (let i in param.list) {
+        param.list[i].position = JSON.parse(param.list[i].position);
+        param.list[i].data = JSON.parse(param.list[i].data);
+        // param.list[i].cols = [];
+        // param.list[i].rows = []
+      }
+      this.charts = param.charts;
+      this.querys = param.query;
+      this.text = param.text;
+      this.list = param.list;
+      this.$nextTick(() => {
+        this.initposition();
+        this.getdragImageData(this.id);
+      })
+    },
+    // 设置图片的数据
+    getchartsdata(res) {
+      console.log('设置图片的数据:', res.data);
+      if (res.status === 200) {
+        for (let i in res.data) {
+          if (i.indexOf('charts') > -1) {
+            // 如果是图形的
+            let series;
+            let temp;
+            for (let j in this.charts) {
+              if (this.charts[j].key === i) {
+                temp = j;
+              }
+            }
+            if (this.charts[temp].type === 'pie') {
+              series = [{
+                name: res.data[i].z[0],
+                type: this.charts[temp].type,
+                data: res.data[i].y[0].map((yitem, index) => {
+                  return ({
+                    value: yitem,
+                    name: res.data[i].x[index]
+                  })
+                }),
+              }]
+              this.charts[temp].option.legend.data = res.data[i].x;
+              this.charts[temp].option.series = JSON.parse(JSON.stringify(series));
+            } else if (this.charts[temp].type === 'bar' || this.charts[temp].type === 'line') {
+              if (res.data[i].y.length === 1) {
+                series = [{
+                  type: this.charts[temp].type,
+                  data: res.data[i].y[0],
+                }]
+              } else if (res.data[i].y.length === 0) {
+                series = [];
+              } else if (res.data[i].y.length > 1) {
+                series = res.data[i].y.map((item, index) => {
+                  return {
+                    name: res.data[i].z[index],
+                    type: this.charts[temp].type,
+                    data: item
+                  }
+                })
+              }
+              this.charts[temp].option.xAxis[0].data = res.data[i].x;
+              this.charts[temp].option.legend.data = res.data[i].z;
+              this.charts[temp].option.series = JSON.parse(JSON.stringify(series));
+            } else if (this.charts[temp].type === 'barline') {
+              if (res.data[i].y.length === 1) {
+                series = [{
+                  type: 'line',
+                  data: res.data[i].y[0],
+                }, {
+                  type: 'bar',
+                  data: res.data[i].y[0],
+                }]
+              } else if (res.data[i].y.length === 0) {
+                series = [];
+              } else if (res.data[i].y.length > 1) {
+                let tempseries = [];
+                for (let j in res.data[i].y) {
+                  tempseries.push({
+                    name: res.data[i].z[j],
+                    type: 'line',
+                    data: res.data[i].y[j]
+                  });
+                  tempseries.push({
+                    name: res.data[i].z[j],
+                    type: 'bar',
+                    data: res.data[i].y[j]
+                  });
+                }
+                series = tempseries;
+              }
+              this.charts[temp].option.xAxis[0].data = res.data[i].x;
+              this.charts[temp].option.legend.data = res.data[i].z;
+              this.charts[temp].option.series = JSON.parse(JSON.stringify(series));
+            }
+          } else if (i === 'querylist') {
+            // 如果是筛选条件
+            for (let item of res.data[i]) {
+              for (let k in this.querys) {
+                if (this.querys[k].key === item.name) {
+                  this.querys[k].option = item.option;
+                  this.querys[k].value = item.value;
+                }
+              }
+            }
+            this.$forceUpdate();
+          } else if (i.indexOf('list') > -1) {
+            for (let n in this.list) {
+              if (this.list[n].key === i) {
+                this.list[n].data.cols = res.data[i];
+              }
+            }
+          }
+        }
+      }
+      let param = {
+        ids: this.id, // 报表ID
+        offset: 0, // 当前第几页
+        pageSize: 10, // 每页显示多少条
+      }
+      this.DragListData(param);
+    },
+    // 得到图形信息
+    getdragImageData(val) {
+      dragImageData(val).then(res => {
+        this.getchartsdata(res);
+      })
+    },
+    // dragListData
+    DragListData(item) {
+      dragListData(item).then((res) => {
+        // console.log('DragListData-res', res);
+      })
+    },
+  },
+  watch: {},
+}
+class Drag {
+  constructor() {
+    this.dragdoms = [];
+    this.initdrag('.dragdom', {
+      containment: '.dragbox',
+      handle: '.content',
+    });
+  }
+  initdrag(classname, box) {
+    // 给组件绑定事件
+    let dragDom = document.querySelectorAll(classname);
+    for (let item of dragDom) {
+      let dragdom = new Draggabilly(item, box);
+      this.dragdoms.push(dragdom);
+    }
+  }
+  upindex(allclassname, clickdom) {
+    $(allclassname).css('z-index', 4);
+    $(clickdom).css('z-index', 5);
+  }
+  pointerdown(e, pointer, element) { }
+  dragstart(e, pointer, element) {
+    this.upindex('.dragdom', element);
+  }
+  dragmove(e, pointer, moveVector, element) { }
+  dragend(e, pointer, element) { }
+  listenevent(that) {
+    this.context = that;
+    for (let item of this.dragdoms) {
+      let $element = item.element;
+      item.on('dragStart', (event, pointer) => {
+        this.dragstart(event, pointer, $element);
+      });
+      item.on('dragMove', (event, pointer, moveVector) => {
+        this.dragmove(event, pointer, moveVector, $element);
+      });
+      item.on('dragEnd', (event, pointer) => {
+        this.dragend(event, pointer, $element);
+      });
+      item.on('pointerDown', (event, pointer) => {
+        this.pointerdown(event, pointer, $element);
+      })
+    }
+  }
+}
+</script>

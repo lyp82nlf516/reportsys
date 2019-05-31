@@ -1,0 +1,186 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+Vue.use(Router)
+
+const router = new Router({
+  routes: [
+    {
+      path: '/',
+      redirect: 'panel'
+    },
+    {
+      path: '/main',
+      name: 'main',
+      component: resolve => require(['@/components/main.vue'], resolve),
+      redirect: {
+        name: 'panel'
+      },
+      children: [
+        {
+          path: '/tablefield',
+          name: 'tablefield',
+          component: resolve =>
+            require(['@/components/newpage/tablefield.vue'], resolve)
+        },
+        {
+          path: '/test1',
+          name: 'test1',
+          component: resolve =>
+            require(['@/components/newpage/test1.vue'], resolve)
+        },
+        {
+          path: '/formpage',
+          name: 'formpage',
+          component: resolve =>
+            require(['@/components/newpage/formpage.vue'], resolve)
+        },
+        {
+          path: '/creatpage',
+          name: 'creatpage',
+          component: resolve =>
+            require(['@/components/newpage/creatpage.vue'], resolve)
+        },
+        {
+          path: '/rolemanagerz',
+          name: 'rolemanagerz',
+          component: resolve =>
+            require(['@/components/newpage/rolemanager.vue'], resolve)
+        },
+        {
+          path: '/usersmanagerz',
+          name: 'usersmanagerz',
+          component: resolve =>
+            require(['@/components/newpage/usersmanager.vue'], resolve)
+        },
+        {
+          path: '/tableship',
+          name: 'tableship',
+          component: resolve =>
+            require(['@/components/newpage/tableship.vue'], resolve)
+        },
+        {
+          path: '/panel',
+          name: 'panel',
+          component: resolve =>
+            require(['@/components/newpage/panel.vue'], resolve)
+        },
+        {
+          path: '/rpt',
+          name: 'rpt',
+          component: resolve =>
+            require(['@/components/newpage/home.vue'], resolve)
+        },
+        {
+          path: '/configfiled/:id',
+          name: 'configfiled',
+          component: resolve =>
+            require(['@/components/newpage/configfield.vue'], resolve)
+        },
+        {
+          path: '/concharttable',
+          name: 'concharttable',
+          component: resolve =>
+            require(['@/components/newpage/concharttable.vue'], resolve)
+        },
+        {
+          path: '/createbytemplate/:id',
+          name: 'createbytemplate',
+          component: resolve =>
+            require(['@/components/newpage/createbytemplate.vue'], resolve)
+        },
+        {
+          path: '/createdchart/:id',
+          name: 'createdchart',
+          component: resolve =>
+            require(['@/components/newpage/createdchart.vue'], resolve)
+        },
+        {
+          path: '/editconfigchart/:id',
+          name: 'editconfigchart',
+          component: resolve =>
+            require(['@/components/newpage/editconfigchart.vue'], resolve)
+        },
+        {
+          path: '/confidchart',
+          name: 'confidchart',
+          component: resolve =>
+            require(['@/components/newpage/confidchart.vue'], resolve)
+        },
+        {
+          path: '/tablefilder/:id',
+          name: 'tablefilder',
+          component: resolve =>
+            require(['@/components/newpage/tablefilder.vue'], resolve)
+        },
+        {
+          path: '/configurecomp',
+          name: 'configurecomp',
+          component: resolve =>
+            require(['@/components/customreports/configurecomp.vue'], resolve)
+        },
+        {
+          path: '/reportconfigure',
+          name: 'reportconfigure',
+          component: resolve =>
+            require(['@/components/customreports/reportconfigure.vue'], resolve)
+        },
+        {
+          path: '/reportlist',
+          name: 'reportlist',
+          component: resolve =>
+            require(['@/components/customreports/reportlist.vue'], resolve)
+        },
+        {
+          path: '/reportpart',
+          name: 'reportpart',
+          component: resolve =>
+            require(['@/components/customreports/reportpart.vue'], resolve)
+        },
+        // 配置
+        {
+          path: '/bit_group',
+          name: 'bit_group',
+          component: resolve =>
+            require(['@/components/reportsform/managerType.vue'], resolve)
+        },
+        {
+          path: '/menu_order',
+          name: 'menu_order',
+          component: resolve =>
+            require(['@/components/reportsform/menu_order.vue'], resolve)
+        },
+        {
+          path: '/pz_bit',
+          name: 'pz_bit',
+          component: resolve =>
+            require(['@/components/reportsform/defaultList.vue'], resolve)
+        },
+        {
+          path: '/pz_rpt',
+          name: 'pz_rpt',
+          component: resolve =>
+            require(['@/components/reportsform/openConf.vue'], resolve)
+        },
+        {
+          path: '/rpt_list',
+          name: 'rpt_list',
+          component: resolve =>
+            require(['@/components/reportsform/managerConf.vue'], resolve)
+        },
+        {
+          path: '/rpt_tree',
+          name: 'rpt_tree',
+          component: resolve =>
+            require(['@/components/reportsform/managerTree.vue'], resolve)
+        },
+        {
+          path: '/rpt_upload',
+          name: 'rpt_upload',
+          component: resolve =>
+            require(['@/components/reportsform/managerUpload.vue'], resolve)
+        }
+      ]
+    }
+  ]
+})
+export default router

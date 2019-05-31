@@ -1,0 +1,190 @@
+import { login } from '@/services/query'
+import Vue from 'vue'
+import Router from 'vue-router'
+Vue.use(Router)
+
+const router = new Router({
+  routes: [
+    {
+      path: '/',
+      redirect: 'home'
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: resolve => require(['@/components/newpage/home.vue'], resolve)
+    },
+    {
+      path: '/main',
+      name: 'main',
+      component: resolve => require(['@/components/main.vue'], resolve),
+      redirect: {
+        name: 'tabs'
+      },
+      children: [
+        {
+          path: '/tablefield',
+          name: 'tablefield',
+          component: resolve =>
+            require(['@/components/newpage/tablefield.vue'], resolve)
+        },
+        {
+          path: '/tabs',
+          name: 'tabs',
+          component: resolve =>
+            require(['@/components/newpage/tabs.vue'], resolve)
+        },
+        {
+          path: '/panel',
+          name: 'panel',
+          component: resolve =>
+            require(['@/components/newpage/panel.vue'], resolve)
+        },
+        {
+          path: '/formpage',
+          name: 'formpage',
+          component: resolve =>
+            require(['@/components/newpage/formpage.vue'], resolve)
+        },
+        {
+          path: '/creatpage',
+          name: 'creatpage',
+          component: resolve =>
+            require(['@/components/newpage/creatpage.vue'], resolve)
+        },
+        {
+          path: '/database',
+          name: 'database',
+          component: resolve =>
+            require(['@/components/newpage/database.vue'], resolve)
+        },
+        {
+          path: '/rolemanagerz',
+          name: 'rolemanagerz',
+          component: resolve =>
+            require(['@/components/newpage/rolemanager.vue'], resolve)
+        },
+        {
+          path: '/usersmanagerz',
+          name: 'usersmanagerz',
+          component: resolve =>
+            require(['@/components/newpage/usersmanager.vue'], resolve)
+        },
+        {
+          path: '/tableship',
+          name: 'tableship',
+          component: resolve =>
+            require(['@/components/newpage/tableship.vue'], resolve)
+        },
+        {
+          path: '/configfiled/:id',
+          name: 'configfiled',
+          component: resolve =>
+            require(['@/components/newpage/configfield.vue'], resolve)
+        },
+        {
+          path: '/concharttable',
+          name: 'concharttable',
+          component: resolve =>
+            require(['@/components/newpage/concharttable.vue'], resolve)
+        },
+        {
+          path: '/createbytemplate/:id',
+          name: 'createbytemplate',
+          component: resolve =>
+            require(['@/components/newpage/createbytemplate.vue'], resolve)
+        },
+        {
+          path: '/createdchart/:id',
+          name: 'createdchart',
+          component: resolve =>
+            require(['@/components/newpage/createdchart.vue'], resolve)
+        },
+        {
+          path: '/optionlist',
+          name: 'optionlist',
+          component: resolve =>
+            require(['@/components/newpage/optionlist.vue'], resolve)
+        },
+        {
+          path: '/editconfigchart/:id',
+          name: 'editconfigchart',
+          component: resolve =>
+            require(['@/components/newpage/editconfigchart.vue'], resolve)
+        },
+        {
+          path: '/confidchart',
+          name: 'confidchart',
+          component: resolve =>
+            require(['@/components/newpage/confidchart.vue'], resolve)
+        },
+        {
+          path: '/tablefilder/:id',
+          name: 'tablefilder',
+          component: resolve =>
+            require(['@/components/newpage/tablefilder.vue'], resolve)
+        },
+        {
+          path: '/configurecomp',
+          name: 'configurecomp',
+          component: resolve =>
+            require(['@/components/customreports/configurecomp.vue'], resolve)
+        },
+        {
+          path: '/reportconfigure',
+          name: 'reportconfigure',
+          component: resolve =>
+            require(['@/components/customreports/reportconfigure.vue'], resolve)
+        },
+        {
+          path: '/reportlist',
+          name: 'reportlist',
+          component: resolve =>
+            require(['@/components/customreports/reportlist.vue'], resolve)
+        },
+        {
+          path: '/reportpart',
+          name: 'reportpart',
+          component: resolve =>
+            require(['@/components/customreports/reportpart.vue'], resolve)
+        },
+        {
+          path: '/treepage',
+          name: 'treepage',
+          component: resolve =>
+            require(['@/components/menu/treepage.vue'], resolve)
+        },
+        {
+          path: '/chartvisual',
+          name: 'chartvisual',
+          component: resolve =>
+            require(['@/components/chart/chartvisual.vue'], resolve)
+        }
+      ]
+    }
+  ]
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.name === 'home') {
+    next()
+  } else {
+    login().then(res => {
+      if (res.status === 200) {
+        if (res.data === true) {
+          next()
+        } else {
+          if (location.href === 'http://sso.beidakeji.com/page/login') {
+            next()
+          } else if (to.name === 'home') {
+            next()
+          } else {
+            location.href = 'http://sso.beidakeji.com/page/login'
+          }
+        }
+      }
+    })
+  }
+})
+
+export default router

@@ -1,0 +1,578 @@
+<template>
+  <div id="chartVisual">
+    <div class="chartLeft">
+      <div class="item iteml">
+        <chart
+          ref="chart1"
+          :options="options"
+          :autoResize="true"
+          style="width: 100%;height:164px;"
+        ></chart>
+      </div>
+      <div class="item iteml">
+        <chart
+          ref="chart2"
+          :options="options2"
+          :autoResize="true"
+          style="width: 100%;height:160px;"
+        ></chart>
+      </div>
+      <div class="item">
+        <chart
+          ref="chart3"
+          :options="options3"
+          :autoResize="true"
+          style="width: 100%;height:165px;"
+        ></chart>
+      </div>
+    </div>
+    <div class="chartCenter">
+      <div
+        class="item iteml"
+        style="width: 100%;height:335px;"
+      ></div>
+      <div class="item">
+        <div class="list list_l">
+          <chart
+            :options="options4"
+            :autoResize="true"
+            style="width: 100%;height:165px;"
+          ></chart>
+        </div>
+        <div class="list"></div>
+      </div>
+    </div>
+    <div class="chartRight">
+      <div class="item iteml">1</div>
+      <div class="item iteml">2</div>
+      <div class="item">3</div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss">
+#chartVisual {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: auto;
+  padding: 10px;
+  background: rgb(244, 249, 255);
+  .item {
+    width: 100%;
+    height: 100%;
+  }
+  .chartLeft,
+  .chartCenter,
+  .chartRight {
+    float: left;
+  }
+  .chartLeft {
+    width: 289px;
+  }
+  .chartRight {
+    width: 30%;
+  }
+  .chartCenter {
+    width: calc(40% - 20px);
+    margin: 0 10px;
+    .item {
+      width: 100%;
+      background: #fff;
+      height: 100%;
+    }
+    .list {
+      float: left;
+      width: 50%;
+      height: 100%;
+    }
+    .list_l {
+      margin-right: 10px;
+      width: calc(50% - 10px);
+    }
+  }
+  .chartLeft .item {
+    background: #fff;
+  }
+  .chartLeft .iteml {
+    margin-bottom: 10px;
+  }
+  .chartCenter .item {
+    background: #fff;
+  }
+  .chartRight .item {
+    background: #fff;
+  }
+  .chartCenter .iteml {
+    margin-bottom: 10px;
+  }
+  .chartRight .iteml {
+    margin-bottom: 10px;
+  }
+}
+</style>
+
+<script>
+import ECharts from 'vue-echarts';
+import 'echarts/lib/chart/line';
+import 'echarts/lib/chart/bar';
+import 'echarts/lib/component/title';
+import 'echarts/lib/component/tooltip';
+import 'echarts/lib/chart/pie';
+export default {
+  data() {
+    return {
+      options: {
+        grid: {
+          left: '60',
+          top: '30',
+          bottom: '20',
+          borderWidth: 1
+        },
+        title: {
+          text: '北京买卖销售数据',
+          textStyle: {
+            color: '#999',
+            fontSize: 15,
+            fontWeight: 'normal'
+          },
+          left: 'center'
+        },
+        tooltip: {
+          // trigger: 'axis'
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ['line', 'bar'] },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        calculable: true,
+        legend: {
+          data: ['价值业务', '其它业务']
+        },
+        xAxis: {
+          type: 'category',
+          data: ['2015', '2016', '2017', '2018'],
+          axisLine: {
+            lineStyle: {
+              color: '#cdced0'
+            }
+          },
+          axisLabel: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: '#cdced0'
+              }
+            },
+            axisLabel: {
+              color: '#7a7476'
+            },
+            axisTick: {
+              show: false
+            },
+            max: 800
+          }
+        ],
+        series: [
+          {
+            name: '其它业务',
+            data: [280, 280, 340, 310],
+            type: 'bar',
+            markPoint: {
+              data: [
+                { type: 'max', name: '最大值' },
+                { type: 'min', name: '最小值' }
+              ]
+            },
+            markLine: {
+              data: [
+                { type: 'average', name: '平均值' }
+              ]
+            },
+            itemStyle: {
+              color: '#67a0ff'
+            }
+          },
+          {
+            name: '价值业务',
+            data: [600, 660, 610, 700],
+            type: 'bar',
+            legendHoverLink: true,
+            markPoint: {
+              data: [
+                { type: 'max', name: '最大值' },
+                { type: 'min', name: '最小值' }
+              ]
+            },
+            itemStyle: {
+              color: '#27dec2'
+            },
+            markLine: {
+              itemStyle: {
+                color: '#27dec2',
+                borderType: 'dashed',
+                opacity: '.7',
+                normal: {
+                  lineStyle: {
+                    type: 'dashed',
+                    color: '#000'
+                  }
+                }
+              },
+              data: [
+                { type: 'average', name: '平均值' }
+              ]
+            }
+          }
+        ]
+      },
+      options2: {
+        title: {
+          text: '北京租赁数据',
+          textStyle: {
+            color: '#999',
+            fontSize: 15,
+            fontWeight: 'normal'
+          },
+          left: 'center'
+        },
+        tooltip: {
+          // trigger: 'axis',
+        },
+        legend: {
+          data: ['产品A', '产品B', '产品C']
+        },
+        grid: {
+          left: '60',
+          top: '30',
+          bottom: '20'
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: 'category',
+            boundaryGap: false,
+            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+            axisLine: {
+              lineStyle: {
+                color: '#cdced0'
+              }
+            },
+            axisLabel: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: '#cdced0'
+              }
+            },
+            axisLabel: {
+              color: '#7a7476'
+            },
+            axisTick: {
+              show: false
+            },
+            max: 600
+          }
+        ],
+        series: [
+          {
+            name: '产品A',
+            type: 'line',
+            data: [198, 175, 280, 175, 256, 145, 230],
+            itemStyle: {
+              color: '#00e4c3',
+              lineStyle: {
+                width: 3,
+                type: 'dotted',
+                color: '#00e4c3'
+              },
+              emphasis: {
+                color: '#00e4c3',
+                lineStyle: {
+                  width: 3,
+                  type: 'dotted',
+                  color: '#00e4c3'
+                }
+              }
+            },
+            symbolSize: 5
+          },
+          {
+            name: '产品B',
+            type: 'line',
+            data: [290, 230, 390, 287, 342, 365, 376],
+            itemStyle: {
+              color: '#58b1ff',
+              lineStyle: {
+                width: 3,
+                type: 'solid',
+                color: '#0180ff'
+              },
+              emphasis: {
+                color: '#0180ff',
+                lineStyle: {
+                  width: 3,
+                  type: 'dotted',
+                  color: '#0180ff'
+                }
+              }
+              // width: 12,
+              // type: 'dotted'
+            },
+            symbolSize: 5
+          },
+          {
+            name: '产品C',
+            type: 'line',
+            data: [410, 300, 485, 378, 464, 476, 432],
+            itemStyle: {
+              color: '#fdd178',
+              lineStyle: {
+                width: 3,
+                type: 'solid',
+                color: '#fdd178'
+              },
+              emphasis: {
+                color: '#fdd178',
+                lineStyle: {
+                  width: 3,
+                  type: 'dotted',
+                  color: '#fdd178'
+                }
+              }
+            },
+            symbolSize: 5
+          }
+        ]
+      },
+      options3: {
+        title: {
+          text: '上海租赁数据',
+          textStyle: {
+            color: '#999',
+            fontSize: 15,
+            fontWeight: 'normal'
+          },
+          left: 'center'
+        },
+        tooltip: {
+          // trigger: 'axis'
+        },
+        legend: {
+          data: ['意向', '预购', '成交']
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        grid: {
+          left: '60',
+          top: '30',
+          bottom: '20',
+          borderWidth: 1
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: 'category',
+            boundaryGap: false,
+            data: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+            axisLine: {
+              lineStyle: {
+                color: '#cdced0'
+              }
+            },
+            axisLabel: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            boundaryGap: false,
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: '#cdced0'
+              }
+            },
+            axisLabel: {
+              color: '#7a7476'
+            },
+            axisTick: {
+              show: false
+            }
+          }
+        ],
+        series: [
+          {
+            name: '热销产品1',
+            type: 'line',
+            smooth: true,
+            data: [35, 67, 97, 45, 66, 53, 43, 67, 99, 54, 88, 52],
+            itemStyle: {
+              normal: {
+                color: new ECharts.graphic.LinearGradient(
+                  0, 0, 0, 1, [{
+                    offset: 0,
+                    color: '#5aabfd'
+                  },
+                  {
+                    offset: 0.5,
+                    color: '#5aabfd'
+                  },
+                  {
+                    offset: 1,
+                    color: '#5aabfd'
+                  }
+                  ]
+                )
+              }
+            }
+          },
+          {
+            name: '热销产品2',
+            type: 'line',
+            smooth: true,
+            data: [350, 476, 356, 278, 432, 376, 353, 477, 387, 276, 476, 276],
+            itemStyle: {
+              normal: {
+                areaStyle: { type: 'default' },
+                color: new ECharts.graphic.LinearGradient(
+                  0, 0, 0, 1, [{
+                    offset: 0,
+                    color: '#40e1c5'
+                  },
+                  {
+                    offset: 0.5,
+                    color: '#40e1c5'
+                  },
+                  {
+                    offset: 1,
+                    color: '#fff'
+                  }
+                  ]
+                )
+              },
+              emphasis: {
+                color: new ECharts.graphic.LinearGradient(
+                  0, 0, 0, 1, [{
+                    offset: 0,
+                    color: '#40e1c5'
+                  },
+                  {
+                    offset: 0.7,
+                    color: '#40e1c5'
+                  },
+                  {
+                    offset: 1,
+                    color: '#40e1c5'
+                  }
+                  ]
+                )
+              }
+            }
+          }
+        ]
+      },
+      options4: {
+        title: {
+          text: '各城市房源所占比例',
+          textStyle: {
+            color: '#999',
+            fontSize: 15,
+            fontWeight: 'normal'
+          },
+          left: 'center'
+        },
+        grid: {
+          left: '60',
+          top: '60',
+          bottom: '20',
+          borderWidth: 1
+        },
+        tooltip: {
+          trigger: 'item',
+          // formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: {
+          // orient: 'vertical',
+          // x: 'left',
+          data: ['产品A', '产品B', '产品C']
+        },
+        series: [
+          {
+            name: '11',
+            type: 'pie',
+            radius: ['40%', '80%'],
+            avoidLabelOverlap: false,
+            label: {
+              normal: {
+                show: false
+              },
+            },
+            data: [
+              { value: 60, name: '产品C' },
+              { value: 24, name: '产品A' },
+              { value: 16, name: '产品B' }
+            ],
+            color: ['#24dec9', '#ffdb60', '#5ba9fc']
+          }
+        ]
+      }
+    }
+  },
+  created() { },
+  computed: {},
+  mounted() {
+  },
+  components: {
+    ECharts
+  },
+  methods: {}
+}
+</script>

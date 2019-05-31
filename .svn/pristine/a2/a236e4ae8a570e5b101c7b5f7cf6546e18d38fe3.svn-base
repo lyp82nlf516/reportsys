@@ -1,0 +1,261 @@
+<template>
+  <div class="optionlistbox">
+    <el-table
+      :data="optionlist"
+      border
+    >
+      <el-table-column label="图片">
+        <template slot-scope="scope">
+          <img
+            :src="scope.row.url"
+            width='20'
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="名字">
+        <template slot-scope="scope">
+          <el-input
+            v-model="scope.row.label"
+            placeholder="请输入内容"
+            @keyup.enter.native="submitlabel(scope.row)"
+            @blur="submitlabel(scope.row)"
+          ></el-input>
+        </template>
+      </el-table-column>
+      <el-table-column label="顺序">
+        <template slot-scope="scope">
+          {{scope.row.ordercode}}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <img
+            src="../../assets/img/imgchart/up.png"
+            width='20'
+            @click="up(scope.row.ordercode)"
+          >
+          <img
+            src="../../assets/img/imgchart/down.png"
+            width='20'
+            @click="down(scope.row.ordercode)"
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      @current-change="currentpagechange"
+      :total="total"
+      :current-page="offset"
+      :page-size="pageSize"
+      layout="total, prev, pager, next, jumper"
+    >
+    </el-pagination>
+  </div>
+</template>
+<style lang="scss">
+.optionlistbox {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: auto;
+  padding: 10px;
+  .el-table td,
+  .el-table th {
+    padding: 5px 0;
+  }
+  .el-table .cell img {
+    vertical-align: middle;
+  }
+  img:hover {
+    cursor: pointer;
+  }
+  .el-input__inner {
+    height: 30px;
+    border: 0;
+  }
+  .el-input__inner:hover {
+    height: 30px;
+    border: 1px solid blue;
+  }
+}
+</style>
+<script>
+import {
+  listimg,
+  editimg,
+  addimg,
+  delimg
+} from '@/services/query';
+export default {
+  data() {
+    return {
+      optionlist: [{
+        id: '1',
+        label: '报表名',
+        ordercode: 0,
+        type: 'formname',
+        param: 'text',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEPklEQVRYR8WXXYhVVRTH/2ufvc947z1fpi9JKZQWlQ6++BCFBBE+FFEmgRD10JtQPYkRFVgZEYEGgZV9MVkUoil96fQBampFBBYaRmIY9lAo55x97tDM3mevOKN3HO/cmbl3RnC/7rXW/3fX1z6XcIUPXWF9jAGEIc8nMmsFaN4MoRhMR1PtfQ6Q6TbGBQCuxaE5yo4eE4Thbp3b7ZzgZYKxItX+w93GGAUIAr5Zkn0x1eq+bh0ns4vDkROZ9m/sNk4LYKlH9rlMq9VhaG73CHeWjK+0VoerQElgV6eF3AWwDEO7Qmt1ZLzAXHA8XEdjaIj+jsOR3zPt3zBjgDiwDwBuPgv1LbmyvwpEgpexo+Ps3CnhiWscuwWCxBnnUCOBOgHsCMN5Lj+YNUAUjKwTTh1xwtwGwBHRImYUJcttHpk1RBQScLcDfiDgLJPcIZxdUBKc1urgrAGCgG+Swj7Iw3I7+eVSlN5pdkghzaoSar/gcjkRHDNnJeQZj8zKvFBvBwGuKwo6PmuAqWpXr/PVQ0P4B6ByiiacXQ902zyT2TUa3N9s0i/dxpkwBVM5BoFZKQkbq74cZ8dMdJzA/wLg8dPTDUQHAK4lkd3Q7lwy9gngXjCfzgp/6/j7ep0X+MIuYaIlIF4Dpp2ZlttmCDC5WxKYzRb4pCjUAYC9pI7+dAgnAcoverFMQrvbEX2c5/L96SB6KkESmC1O8Ed57n8fh2YTEZ4C+K809xdeKsR+Etp9AL2aarl7KoieAOLQvOKAPdW8J+HIeyB6BECR5nIuQLYNop6Edq8jeinP5ReTQXTqgTlJZJ/s0AODAriHHQ7kTbU3mcOL4JvVcPRzWqj9nQU4iEM7CIdns6b6upNNTxmIAvM0BP2Z53L7dLVt3VfvhIvsYOmw/nzvXHp6AkiikSeYqS/T6uVuASq7KOKriM1hB3pUa3VovG+nEqgksNU7cMkZLuXJPs8uBuHxVKv7ewFIGrzcoLxFCbfBOPXQ+EXVUwYq0WoUmWAzrdZ3A1GVoIzg5Tmdq9X42j5pPrWs1hYF/Vb59wwwChGODDDTiaxQm6aDqD52qkeqZRf38fXoM/uy3F88YwCARRyZD9nhu7zwX+sEEYbmVq3ljxMfrlHfP7JcLQbIzSgD5wXZi0O7A6Av29du3DB3OYH/qn3RthsoCc0AMw5lhf/6LDLQCjtx7UYNs4qYz2ZD/k9t4jKOzHZiMZhq+U7rbhYZGIMYW7sl4JzzTjWb9GubuEpCu4uZBrJC7phmDKdrq073XI8De9ARbdVavtUmXosju5OY3ki13NPuPZqBWo0X9kk7kGp1x0zkL/REh7XLjSS0n7HDC1lTfdMp9tiHRRKZjQysIEa9awjiPWnub27Zt9auY3peGO8YKftuCTwzsRkvKlz2/4ZhyPME7JsAnytZbSkKOjbVD7rsAF1n74LhFQf4H5/SZD8JT7ISAAAAAElFTkSuQmCC'
+      }, {
+        id: '2',
+        label: '键值对',
+        ordercode: 1,
+        type: 'val',
+        param: 'val',
+        url: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABg0lEQVRYR+2XoVMCQRjFf98eVeWa8aKRgtWLRqPNi0aiTW1GohH/A/8EbA4UohGapgMs4szt5+xROF04ChwzsvH7ZnffvH373q5Q8ZCK92c3ABw008RAsk02LHQ++2EnZ+DwNL0TuC0AUJ2oSNsHSpQYIVLoePtw4eoKz0v6iZs77YVu3yUAYDTphZFvgRywEk/6YeztN9Mc2LQfelk9aqZdFbq7DUCVmcCrVxdChGodZODrq3Di6qK8+XWlDXe8qxnYa6BqEe41QNVHUDkAhQ9rufTdYyMkIjQyS8vbN3rj6tbKg68fGNrOpsuccKPZpHBfBmA0+yau1SjkgQnMF2rPXRZYG1yrZMeLSFUYB8yZyaAtSn2xLxq8G5M9rpUFLrH+pCSM8roSKwxFuCqmKC+unlsxRAhnBYDKk6uvBSCzJMZQTDzLGEM9Z0BoCzR+bTAU5nMUuuJyY2EoDIzSKgWwN6K9D2zUBOYCLfeB//0mZJtPsso/JpsW3Kr1d+NvWCUDP0S7uzBNxcaxAAAAAElFTkSuQmCC`
+      }, {
+        id: '3',
+        label: '表格',
+        ordercode: 2,
+        type: 'list',
+        param: 'list',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAq0lEQVRYR+3XPQrCQBQE4JkTaLyIlVaCl/EOlvaeycImzVoI1mLjAUJi7wTEgH9N8hAjzJYLb3b4WEKWg2kh/GYdypSN2aMCqiDu3zCI+W1POAE4h7GaPOBZQFJe7Uaz1wMaoSu4vKThOlrgQdwFLNBOIHr5Psz/WwFhIyKPShBY3TPaCfg7YAELWMACFrCABb4uEP3T6TDfl7fhpNh2aB8fIY5lyhaMJ8USagdK8jAobDgsAAAAAElFTkSuQmCC'
+      }, {
+        id: '4',
+        label: '柱状图',
+        ordercode: 3,
+        type: 'bar',
+        param: 'bar',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA/klEQVRYR+2XQQ6CMBBF/2BcuBBCl17BrXARYzyJB/A4hpvAATyCO9GujImMAQMhxgZiaQlJu2078/rnJ50hjLxo5PxoAPzoegahkKlY24RqAII45zLxPQ2tqmIMIIjzhBlboo/KzGCAE5mJfVthkwCVou3FjEJm4cwqQF1SVYmNK+AAjCnQ5fLvmg/ugTqgyuXWAFQSO4DpK6Drcm0FdF0+GMC/LncAToHpK+BH+YsInuqz0d2v4yo7Ij+6ngDaqZpK3f1OAFuzgbGesO8DWpNR/iTCvO9FnXPMfJGZWJUxGoDl5nbwvOII0EIneJ+7DH7IVFR5rI5hv+BGB3gD+dj/MC1CsFwAAAAASUVORK5CYII='
+      }, {
+        id: '5',
+        label: '折线图',
+        ordercode: 4,
+        type: 'line',
+        param: 'line',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABuklEQVRYR+2Wz0vbYBjHv88bs1prkkY8eBJksONAmraUUXqZBy8D2VV22N2TnjzMf8BDi3/DDruMoeCO620/Wt0mbOhh4MmLLE3eiIixeSQDQVa1P5auFZJjkvf5fp7P874hhAFfNOB8xACxgSE0UOCkdtF46tUmtv7HCWkxYOQcC8xv3Jr5MAa4vwYyPJYSbkEhLoI5zzSy6H3Rf9/UUHR7IMOqrrhrYJ4DMEvgfSaqBozqyXF6G4d01lcAPWe/BmMmAK2LEVGVHw27kxFGYsCw7FUmvJDSzOKAvE6Cr97pCkDL2UVAPGr66vvTr6mjsMi45TxXRFD2/UT+6l5fAFLZkymF/B/EeMuEEpgDED4AtMCBUvLq+kE3wV0b0HONdwjwS9bN5XBxMmNPPyAxzwp9l5+NT72Eh2s6GoFmNV4KwpJbS1sANXsN6+kUaBk5SaL5E0I8+5dOb4Nua+CPesaerJmvouy84z2gZZ0VLzAq2CF/IAD9CL1es2UESUs+UeliE0QbUYYT85l7bJb//iS3AIw+dmbUBFeIsBslQFhLnqOMb6Zzp4GoQ9vVG8J/wnbIET+PDcQGLgFqyd0hHgGOnwAAAABJRU5ErkJggg=='
+      }, {
+        id: '6',
+        label: '饼状图',
+        ordercode: 5,
+        type: 'pie',
+        param: 'pie',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADtklEQVRYR8WX3YsbVRjGnyfZZNmPZGaCupTqhVa6goLQNGl74d4UdGvx48Iv8AOsXni5+gfY1hsRBL8uvGlRkAWlYrWKu4qI1atmNgXBgm1tqWKLK5LMTDbbbdrMI5Pdlc0mk0xSl87VwJz3eX/nPe+c8xziBj+8wfkRHeBODRqmOyFoEtQugmMCNhOqg5yXdAlkgXXOukvGDzjFWpTJRQIwcs6Tot4lcEsUUUl/EbEp1zY/6Ta+I8DIjoWxuF/7gOSeQEhAicBR+bHPJJ6vLKX+NEacSlgSSTP1WPL56onR+bAxoQDpfGkvxA9J3ATpDzD2uls3DqPIq2vFjHxZnWYp4R/6fNotmt+2G9cWwMg69yumWRIU8IX3t/kULnCpnUA3gEblFBQv9qBnG7PrNVoAhu5d3JxMXvkFhCnhHc+2pjrNMApAI15warXBey7/PHxxrV4LQDpf/pHAfRK+8mzzYTSKEP5EBljuoZ+8gjURCjC63XksHtMRQBfdurUVRS526+JeAAKtus/HF+bMT1d1mypg5MrnQNwhH895c9ZH3ZIH33sFgHDeta0tLQDGNieLAc0BuOAWrNujJO8LIAi6xu3uSbMYvP5XgXS+fIDAfglve7b18kYCCDjoFawDTQBGrvwdiN1CbNIrGN9sJACA792Ctbu5ArnyaRJbfcTHK4X0mY0EkHDGs63xdRUoVUEOuzQNnKC3kQCQqq6dGW0GyJc8gCm3aqZwigtRAVJ550VC7xMYiBoDqOIWMul1S1D6leR4r0sQiKR3uDvh+8dI3BwFQtJpz87c1bYJUecDYQdHJ/HhbHVTIl77EkA2AkTbJnyVxEEBb3kF65UIIq1D7lYyPeIcIvBsp3gJ+z3beq2pAsNZZ1sirmBz6GkjapfIyDsvCXovrC+u1pldLJonmwAaa5kr/0Zii6RnPDsz3VcVVoJC+yJsKw7i+jmMeu2LjodRY2/PlY+DmJBwzLPNR7sdx12rtEtD6WvlcyQ3dT2OA7FeDUlHgKwS6bhzhMAjkQ3Jci+4k6Q/E7x3s2RhAEO5xdsSvDK9Ym5En5Ptfu9QU7riC6cbphT4HdIbrm8dWm9KWwCyShhx9wXIfxPkSF+mdFW0YctVO0xw70o1Alv+uQ8dhT9wtlJJXcIgfGPQHatDt8ahh0TuI5BZHq+v60zu68uWr52ZkXOeEBv/dbSLCTAPPzblzRkfd2vSSDejhsjq1SymPZB2hl7NfM64l43j/+vVrNssrud79ApcT5YOsf8CFBrIMAzmbl0AAAAASUVORK5CYII='
+      }, {
+        id: '7',
+        label: '下拉',
+        ordercode: 6,
+        type: 'select',
+        param: 'select',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA6UlEQVRYR2NkGGDAOMD2M8AdwG/2/j89HfPxlCDYbhQHwARp7RCQZ0cdMBoCoyEwGgIkhwCHwXuFHxcEHxBTSBFSS3JBxGPy3oGZ8f+GPwyMDl9PC17A5whu0/cGLAwM+//+Zwj8ckbwADa1JDsAZAiv6fsEJob/E/A5Amb5PwaGws+nBRfgcihZDiDkCGItB5lDtgNwOYIUyyl2ALojQHxQnBMKduTooCgEYAbB0gQDA+N/UiynSgggOwLExpfgqJYLiMn/xKqhShQQa9loCIyGwGgIDK0QoCRvk6oXo0VEqgHUUj/gvWMAwxUqMG43aOEAAAAASUVORK5CYII='
+      }, {
+        id: '8',
+        label: '输入框',
+        ordercode: 7,
+        type: 'input',
+        param: 'input',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABGElEQVRYR+2WPU7DQBCF3+yCEynxOiAkKHHgBCQ2F0HiEpyAngJRUCAkWs6AogRuACEVFTcgje11Eolmd1Bo+KkojBeh3QPMfvo0evMIjh85/h8ewBsg1c+OIHBGoGbdC8mMa1JJfgOIy3IcjeoEaKZFHDCPSKXZACwvlgBRPzvWj2unAJnfhnkHAN99BUjzTBuOMVnXHuDfG4iSosvEt852wAO4N9Ardlh+D6IacyDyAK4NqD29ixU7dJYDfxNApfm0fO10w6A4NBwMpTAxW9MgyCch7YF+6FxVdSM+DHwqJK1kvrUYt1/CXrkxm4QZthGggVU806y1P99c3LenlQJIO6BlCYGgk6oG/3QOMywB574VewPewBveBTq3gqLgVAAAAABJRU5ErkJggg=='
+      }, {
+        id: '9',
+        label: '时间',
+        ordercode: 8,
+        type: 'date',
+        param: 'date',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADA0lEQVRYR9VXTWjTYBh+nnTqtG2aFBxDYYcJ/o6huFQE58ENlB0EUUQRQT149KA3f256FG/exP+pN0FQUGFz6MF0RZgT/0EvHkSbNml1zDavpDNdt7EtjYNpTsn7ve/zPLzfmydfiHm+OM/8+H8EqKnsTQqXi+CSPahfn9w51bBOE+h2yWeOqZ0K2tnAHVAN6wOJFSI4Y6f1s1MEpLK9BPeL4J6d1neGE7BOFsajuR4K2kA01IIQOAZAB9AnwMBkAorsBtkmgncgbk0RICgJMewUtft4xVF/vdqBqFFojmC0n+SqoOrD5InI21Jp0bYfL6JfvPqqADVlXSNw0AsKUIbIc4K/fBKhbCLYCOATBJ8nkwuxhkCTCL4TGJ64LutBJqpYkF7bTB6oESCKmrKKfwg+i6vstQcTZi3I385AzLC2KpA7JJsB+Zk39RhAt9IBdXM+ybL73bt3BUectH45THtnq4mnrOMKcL7CU44sdTLqt6kCytLpZJJPZwMLsx41cl0NlMczCkCZ2/MZ7WEYgtlqEkauG5RHMwoQwQ0QH2cDC7ne6g/6tFsQErjuspkEDEFg1Y0YpIAVI2v/t2egdghVI2+QbtUPXGCXY+p31Y78Pipu1W5LZWkvZpIvEx3Zk1B4zm9GfkSLYYhF/znQEP5TApZsKC5rWDB6tGqh5chtJ6O+iXU4bYpS2uPH3ZGGi4Wh+Nd4KttJsMuP22XtHDLjdl53B4LMVT059QtYJfFYPLfRJ6FEhj37jLU7TVhYWuvHC6Na2tvrxRuzLRGytRof1AY8v/9/Z2Be3gJxlR57MPGgnr0NmhtoBlzBYSetXwkKWk9e3LAOKUTlUz/BitEu0URjruAtiMC0XW1L7etTD8l0uQkj1wq4fSBbvJx8UYvjFQvjRzIj+5rk6gqAoF+IJ3NBPIYhBoQ7SChj8Hhvm/pK735cwCR7nTvyqUgCOWCbyd4JArwHtcM6SAUnBGgjEJlLEd5B1zususAFx9SvVr1lLknCYAX+MwoDHqRm3gX8BnMcGT9furt0AAAAAElFTkSuQmCC'
+      }, {
+        id: '10',
+        label: '文本',
+        ordercode: 9,
+        type: 'text',
+        param: 'text',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACVElEQVRYR82XTYvTUBSG33NbFTqTNPcXiFtXI9PGjasyoqKMXyPogLhxr/hL9AeIKz9wGGUUlQEZXAhig+OAjC51PYtJb9qqaNMjie202klu0qRotknO8573fNyEMOFrutJYEMR3QbzOKN5o1s03w0iaJN+w3bMELBFQ+M3hFnOh5jllp8+dmIBReB/5p4h/ICB0oolvYr/6YLm5CzDt7UWf6WPbkRvRLgB+p3iwtW58ylWAWVEXQd17RNxkLswFtd5VBGNZOXIh8CI3AYbtXiHGHaJ+zEGth0Uw+JlXkmfwijq5CeiN2sMBfLThAhECWFQl61IfnouAEC74wWDU/h7s0dHLbQ8YFXeeBB5Fw3dQt1VdXt1t54zdAz34MgHF2GXGeKwc6wJAfm4CzKo6Duo+1cEZfN+ry8tR8LF6IISju0KEvXGZM+OJ51jn4uCpBaSCT1nnh7s9SmziHpi2GzXB/EKbOXjVK8lTSeCJHejBnxNhX6ztAbwt57FJP5KesloHjNntIyTo5STgWgcCuBBYBVFJk9Gaalsn0mSu/R5IBd+yTuILfU9qu3YTmrPqMAl/LVHmGeCRJSjb7hKA8LiMuhj82tuSR8fNPLYEOgEh3JfH8I6+jmO7tgRxAvKEpy4Bg996vqzlkXnqEoTwtpzDJrWy2q4tQZ4AXSztJtQFyHr//xEwVXVnCoTTWTNK8r7PWAn+GwZTMONa5T34DIKVJEDmZxgN9RMHsCEbYQmC7IuE95kDpwjQYRwKXNjpAbPq3iTCtRQxxn6UGbc8R14PAvwCyVcRML3fE9QAAAAASUVORK5CYII='
+      }],
+      total: 0,
+      offset: 1,
+      pageSize: 10,
+    }
+  },
+  mounted() {
+    this.Getlist();
+    this.del();
+    //  this.Addimg();
+    // 恢复初始数据，防止数据库存入的垃圾数据无法清除
+    // this.Editlist(this.optionlist[0]);
+    // this.Editlist(this.optionlist[1]);
+    // this.Editlist(this.optionlist[2]);
+    // this.Editlist(this.optionlist[3]);
+    //  this.Editlist(this.optionlist[4]);
+    // this.Editlist(this.optionlist[5]);
+    // this.Editlist(this.optionlist[6]);
+    // this.Editlist(this.optionlist[7]);
+    // this.Editlist(this.optionlist[8]);
+    // this.Editlist(this.optionlist[9]);
+  },
+  methods: {
+    // 上移位置
+    up(val) {
+      if (val > 0) {
+        this.optionlist[val].ordercode--;
+        this.optionlist[val - 1].ordercode++;
+        [this.optionlist[val], this.optionlist[val - 1]] = [this.optionlist[val - 1], this.optionlist[val]];
+        this.Editlist(this.optionlist[val]);
+        this.Editlist(this.optionlist[val - 1]);
+      }
+    },
+    // 下调位置
+    down(val) {
+      if (val < this.optionlist.length - 1) {
+        this.optionlist[val].ordercode++;
+        this.optionlist[val + 1].ordercode--;
+        [this.optionlist[val], this.optionlist[val + 1]] = [this.optionlist[val + 1], this.optionlist[val]];
+        this.Editlist(this.optionlist[val]);
+        this.Editlist(this.optionlist[val + 1]);
+      }
+    },
+    // submitlabel修改工具栏组件名
+    submitlabel(row) {
+      this.Editlist(row);
+    },
+    // dragListData
+    currentpagechange(val) {
+      this.offset = val;
+      this.Getlist();
+    },
+    // 自定义排序函数，通过比较返回值来对数组某元素的属性进行排序
+    compare(property) {
+      return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        return value1 - value2;
+      }
+    },
+    // getlist
+    Getlist() {
+      let param = {
+        offset: this.offset,
+        pageSize: this.pageSize,
+      }
+      listimg(param).then((res) => {
+        if (res.status === 200) {
+          this.optionlist = res.data.rows;
+          this.optionlist.sort(this.compare('ordercode'));
+          this.total = res.data.total;
+        }
+      })
+    },
+    // editlist
+    async Editlist(val) {
+      editimg(val).then((res) => {
+        if (res.status === 200) { }
+      })
+    },
+    Addimg(val) {
+      let obj = {
+        label: '柱状图和折线图',
+        ordercode: 10,
+        type: 'barline',
+        param: 'barline',
+        url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAC3UlEQVRYR+2Xz2vUUBDHv5Psut0k+yM91IsghVrRyv6I2INe6kULigileOhBsAgi/gO99FIQKeLVQ/FSD/YgKAhi8eZFCrJvXWwr9GBBROzBZEuy262bjGQxtdSuDXa3BTWHwOPN5Pt5bzLz5hH2+aF91kfLAbR87bgtDiwCxGEW11IALVvri0j1ZwBrBLxkYLbuqi/sEq00g2kpQCCSzlcPg90BEJ0FMMhAR9lSjuIDfdkK0hYAX0Q9YR+MHsBdAg15TFJZxOPbhaUNACyn89WbRN4EGM/rwBsZNGAJ9dJ2YWgpQDJb6Zdkb4oYsutKo6slZS6dt6cBqWgJ5V7bAJJ93CnHKneYeYiIxs2Cch8gzxfUDeezV8eFckkttAGAKZWrjBLxbSJ64taUsdV5+hoIpTLVbkn2SqZQks3S8o9DoBt2hpmmQJDBPGoJ7e3WFfrZwOReKRe0yZaloX6SU+xVJggYYvCYJdSHYYvOrkOg56ojIG+SwTOWq46jRE6Yavc7m1AhSBprPRLXHwBgjyPXV4sdS7sVDvxDAaRz9lUmySkL5XFYYT3vfATh0IY945Mp1J/jHxNNAdJ55xqBjphCGQsrutlONxw2a0oM87SOHk6mExXLEqoUqhSn885TAvcy5BuWiL/ac4BUxjHKJaUYFJM9Bwgj2KgDnty5yXbZKsaXg/GuQrATgJbhrmjEWWKGaNgSJfy3VVCNPQFIZNd6ZcmdtYTa7Qsmc84pWeJps6Ad+1sAmPTs2hkmRIIVfau7i847rdHRtH0HUln7HEmYAVBqhBjoYtC8JdThPQHQDecigFtmQR1snOm56giTN2wJ9fJ/gH9jB5KGfV5iPGr2E/qdDpH3npnngkJE4KhZ0DJB1qQNZx3Mr/0jnIhkZvRbQo2FOox8n0SueloGRQOHutexsPmG0+iAiZRmpdi/okXY69rwJ2nFFrGFkAA7FePWzYdqSFon9+uXvgM+p/wwBYdmdAAAAABJRU5ErkJggg=='
+      }
+      addimg(obj).then((res) => {
+        console.log('add-res', res);
+      })
+    },
+    del(id) {
+      delimg(id).then((res) => {
+        console.log('del-res', res);
+      })
+    }
+  },
+  watch: {},
+}
+</script>

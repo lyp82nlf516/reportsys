@@ -1,0 +1,593 @@
+<template>
+  <div class="reportList">
+    <div class="reportTitle">
+      <h4>配置报表</h4>
+    </div>
+    <div
+      id="edit_queryDialog"
+      class="box"
+    >
+      <el-form
+        ref="form"
+        :model="form"
+        label-width="90px"
+      >
+        <el-collapse v-model="activeNames">
+          <el-collapse-item
+            title="表名"
+            name="1"
+          >
+            <el-form-item label="报表名称：">
+              <el-input
+                v-model="form.rptName"
+                placeholder="请输入报表名称"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="报表描述：">
+              <el-input
+                type="textarea"
+                v-model="form.rptDesc"
+                placeholder="请输入报表描述"
+              ></el-input>
+            </el-form-item>
+          </el-collapse-item>
+          <el-collapse-item
+            title="选择数据源"
+            name="2"
+          >
+            <el-form-item label="数据源：">
+              <el-select
+                v-model="dataValDefault"
+                filterable
+                v-if="this.dataSource.length !== 0"
+                :placeholder="dataValDefault"
+                @change="changeSource"
+              >
+                <el-option
+                  v-for="(item, index) in dataSource"
+                  :key="index"
+                  :label="item.value"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-collapse-item>
+          <el-collapse-item
+            title="筛选条件"
+            name="2"
+          >
+            <el-form-item label="设置分组：">
+              <el-select
+                v-model="form.region"
+                filterable
+                v-if="this.options2.length !== 0"
+                placeholder="请选择组件"
+                @change="changeData1"
+              >
+                <el-option
+                  v-for="(item, index) in options2"
+                  :key="index"
+                  :label="item.label"
+                  :value="item.label"
+                ></el-option>
+              </el-select>
+              <el-select
+                v-model="form.region2"
+                filterable
+                v-if="this.options1.length !== 0"
+                placeholder="请选择组件"
+                @change="changeData"
+              >
+                <el-option
+                  v-for="item in options1"
+                  :key="item.optListId"
+                  :label="item.optListName"
+                  :value="item.optListId"
+                ></el-option>
+              </el-select>
+              <el-button
+                type="primary"
+                @click="submitFormAdd"
+              >增加</el-button>
+            </el-form-item>
+            <el-form-item label="组件名称：">
+              <el-tooltip
+                :content="item.name"
+                placement="top"
+                :key="item.id"
+                v-for="item in selectlistobj"
+              >
+                <el-button
+                  type="primary"
+                  icon="delete"
+                  @click="delItem(item.label)"
+                >{{item.label}}</el-button>
+              </el-tooltip>
+            </el-form-item>
+          </el-collapse-item>
+          <el-collapse-item
+            title="表格"
+            name="3"
+          >
+            <el-form-item label="表头配置：">
+              <el-input
+                type="textarea"
+                v-model="form.titleName"
+                :rows="5"
+                placeholder="请输入表头信息"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="配置内容：">
+              <el-input
+                type="textarea"
+                v-model="form.content"
+                :rows="7"
+                placeholder="请输入配置内容"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="备注：">
+              <el-input
+                type="textarea"
+                v-model="form.memo"
+                placeholder="请输入备注信息"
+              ></el-input>
+            </el-form-item>
+          </el-collapse-item>
+        </el-collapse>
+        <!-- <el-tabs v-model="activeName" type="border-card">
+          <el-tab-pane label="表名" name="first">
+            <el-form-item label="报表名称：">
+              <el-input v-model="form.rptName" placeholder="请输入报表名称"></el-input>
+            </el-form-item>
+            <el-form-item label="报表描述：">
+              <el-input type="textarea" v-model="form.rptDesc" placeholder="请输入报表描述"></el-input>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="筛选条件" name="second">
+            <el-form-item label="设置分组：">
+              <el-select v-model="form.region" filterable v-if="this.options2.length !== 0" :placeholder="this.options2[0].optCataName" @change="changeData1">
+                <el-option v-for="item in options2" :key="item.optCataId" :label="item.optCataName" :value="item.optCataId"></el-option>
+              </el-select>
+              <el-select v-model="form.region2" filterable v-if="this.options1.length !== 0" placeholder="请选择组件" @change="changeData">
+                <el-option v-for="item in options1" :key="item.optListId" :label="item.optListName" :value="item.optListId"></el-option>
+              </el-select>
+              <el-button type="primary" @click="submitFormAdd">增加</el-button>
+            </el-form-item>
+            <el-form-item label="组件名称：">
+              <el-button type="primary" icon="delete" v-for="item in selectlist" @click="delItem(item)">{{item}}</el-button>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="表格" name="third">
+            <el-form-item label="表头配置：">
+              <el-input v-model="form.titleName" placeholder="请输入表头信息"></el-input>
+            </el-form-item>
+            <el-form-item label="配置内容：">
+              <el-input type="textarea" v-model="form.content" :rows="5" placeholder="请输入配置内容"></el-input>
+            </el-form-item>
+            <el-form-item label="备注：">
+              <el-input type="textarea" v-model="form.memo" placeholder="请输入备注信息"></el-input>
+            </el-form-item>
+          </el-tab-pane>
+        </el-tabs> -->
+        <!-- <el-form-item class="btnGroups">
+          <el-button type="primary" @click="submitAddBtn">添加</el-button>
+          <el-button @click="returnBtn">返回</el-button>
+        </el-form-item> -->
+        <div class="btnlist">
+          <el-button
+            type="primary"
+            @click="submitAddBtn"
+          >添加</el-button>
+          <el-button @click="returnBtn">返回</el-button>
+        </div>
+      </el-form>
+    </div>
+  </div>
+</template>
+<style lang="scss">
+.reportList {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: auto;
+  padding: 10px;
+  .el-collapse-item__header {
+    padding-left: 15px;
+    .el-collapse-item__arrow {
+      float: left;
+    }
+  }
+  .el-collapse-item__content {
+    padding: 10px 15px;
+  }
+  .reportTitle {
+    background: #fff;
+    padding: 10px 0 5px 10px;
+    padding: 10px;
+    margin: 0px 0px 10px 0;
+    border: 1px solid #eee;
+    //border-left-width: 5px;
+    border-radius: 3px;
+    //border-left-color: #4074e1;
+    h4 {
+      padding: 10px;
+      margin: 0;
+      color: #666;
+      background: #f5f5f5;
+      border-radius: 3px;
+      border-left: 5px solid #f5f5f5;
+      border: 1px solid #dfe6ec;
+    }
+  }
+  #edit_queryDialog {
+    clear: both;
+    margin-bottom: 20px;
+    margin-top: 0;
+    padding: 0;
+    background: #fff;
+    padding: 10px;
+    .el-collapse {
+      border: none;
+    }
+    .el-collapse-item {
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .el-collapse-item__header {
+      font-size: 15px;
+      color: #666;
+      background: #d9eaee;
+      background: #b3dbe5;
+      background: #f5f5f5;
+      // border-radius: 3px;
+      font-weight: bold;
+      border: 1px solid #dfe6ec;
+    }
+    .el-collapse-item__wrap {
+      border-left: 1px solid #dfe6ec;
+      border-right: 1px solid #dfe6ec;
+    }
+    .btnGroups {
+      text-align: center;
+      .el-form-item__content {
+        margin-left: 0 !important;
+      }
+    }
+  }
+  .btnlist {
+    text-align: center;
+    margin: 15px auto;
+  }
+}
+</style>
+<script>
+import {
+  openConf,
+  getDbs,
+  addConf,
+  saveReportConf
+} from '@/services/query';
+export default {
+  data() {
+    return {
+      activeName: 'second',
+      activeNames: ['1', '2', '3'],
+      selectlist: [],
+      selectlistobj: [],
+      strsArr: [],
+      form: {
+        rptName: '',
+        rptDesc: '',
+        titleName: '',
+        content: '',
+        memo: '',
+        region: '',
+        region2: ''
+      },
+      options2: [],
+      options1: [],
+      dataSource: [],
+      dataValDefault: '',
+      dbsource: '',
+      optListId: '',
+      showList: []
+    }
+  },
+  created() { },
+  props: ['message'],
+  mounted() {
+    this.GetopenConf();
+    this.GetDbs();
+    if (this.message === undefined) {
+    } else {
+      // let jsons = JSON.stringify(this.message);
+      // let jsonObj = JSON.parse(jsons);
+      // console.log('message', this.message);
+      this.form.rptName = this.message.rptName;
+      this.form.rptDesc = this.message.rptDesc;
+      this.form.titleName = this.message.titleName;
+      this.form.content = this.message.content;
+      this.form.memo = this.message.memo;
+      this.dbsource = this.message.dbsource;
+      for (let o in this.dataSource) {
+        if (this.dataSource[o].key === this.dbsource) {
+          this.dataValDefault = this.dataSource[o].value;
+        }
+      }
+      // this.optListId = this.message.optListId;
+      if (this.message.optListId !== '') {
+        this.optListId = this.message.optListId;
+        this.showList = this.optListId.split(',');
+        for (let i in this.showList) {
+          for (let k in this.message.option) {
+            if (this.showList[i] === this.message.option[k].id) {
+              this.selectlist.push(this.message.option[k].label);
+              let haveobj1 = {
+                'label': this.message.option[k].label,
+                'id': this.message.option[k].id,
+                'name': this.message.option[k].name,
+              }
+              this.selectlistobj.push(haveobj1);
+            }
+          }
+          // let param = this.message.option[i].optCataId;
+          // getOptionByGroups(param).then((res) => {
+          //   for (let k in this.showList) {
+          //     for (let j in res.data) {
+          //       if (this.showList[k] === res.data[j].optListId) {
+          //         this.selectlist.push(res.data[j].optListName);
+          //       }
+          //     }
+          //   }
+          // })
+        }
+      } else {
+        this.optListId = '';
+      }
+    }
+  },
+  computed: {},
+  components: {},
+  methods: {
+    // 获取数据源 getDbs
+    GetDbs() {
+      getDbs().then((res) => {
+        if (res.status === 200) {
+          this.dataSource = res.data;
+          if (this.message === undefined) {
+            this.dataValDefault = this.dataSource[0].value;
+            this.dbsource = this.dataSource[0].key;
+          } else {
+            this.dbsource = this.message.dbsource;
+            for (let o in this.dataSource) {
+              if (this.dataSource[o].key === this.dbsource) {
+                this.dataValDefault = this.dataSource[o].value;
+              }
+            }
+          }
+        }
+      })
+    },
+    // 获取数据
+    GetopenConf() {
+      openConf().then((res) => {
+        if (res.status === 200) {
+          this.options2 = res.data;
+          // console.log('options2', res)
+          // let val = this.options2[0].optCataId;
+          // getOptionByGroups(val).then((res) => {
+          //   this.options1 = res.data;
+          //   if (this.selectlist.length > 0) {
+          //     for (let i in this.selectlist) {
+          //       for (let j in res.data) {
+          //         if (this.selectlist[i] === res.data[j].optListName) {
+          //           let haveobj1 = {
+          //             'optListName': res.data[j].optListName,
+          //             'optListId': res.data[j].optListId,
+          //           }
+          //           this.selectlistobj.push(haveobj1);
+          //         }
+          //       }
+          //     }
+          //   }
+          // })
+        }
+      })
+    },
+    // 选择筛选条件
+    changeData1() {
+      for (let i in this.options2) {
+        if (this.form.region === this.options2[i].label) {
+          if (!this.selectlist.includes(this.options2[i].label)) {
+            this.selectlist.push(this.options2[i].label);
+            let obj1 = {
+              'label': this.options2[i].label,
+              'id': this.options2[i].id,
+              'name': this.options2[i].name
+            }
+            this.selectlistobj.push(obj1);
+            if (this.optListId === '') {
+              this.optListId = `${this.options2[i].id}`
+            } else {
+              this.optListId = `${this.optListId},${this.options2[i].id}`
+            }
+          }
+        }
+      }
+      // let val = this.form.region;
+      // getOptionByGroups(val).then((res) => {
+      //   this.options1 = res.data;
+      //   this.form.region2 = '请选择组件';
+      //   console.log('this.selectlist:', this.selectlist)
+      // })
+    },
+    changeData() {
+      for (let i in this.options1) {
+        if (this.form.region2 === this.options1[i].optListId) {
+          if (!this.selectlist.includes(this.options1[i].optListName)) {
+            this.selectlist.push(this.options1[i].optListName);
+            let obj1 = {
+              'optListName': this.options1[i].optListName,
+              'optListId': this.options1[i].optListId
+            }
+            this.selectlistobj.push(obj1);
+            if (this.optListId === '') {
+              this.optListId = `${this.options1[i].optListId}`
+            } else {
+              this.optListId = `${this.optListId},${this.options1[i].optListId}`
+            }
+          }
+        }
+      }
+    },
+    // 选择数据源
+    changeSource() {
+      // dataSource dataValDefault dbsource
+      for (let i in this.dataSource) {
+        if (this.dataSource[i].value === this.dataValDefault) {
+          this.dbsource = this.dataSource[i].key;
+        }
+      }
+    },
+    // 删除筛选条件
+    delItem(val) {
+      for (let j in this.selectlist) {
+        if (this.selectlist[j] === val) {
+          this.selectlist.splice(j, 1);
+        }
+      }
+      for (let i in this.selectlistobj) {
+        if (this.selectlistobj[i].label === val) {
+          this.selectlistobj.splice(i, 1);
+        }
+      }
+      // let strArr = this.optListId.split(',');
+      // console.log('this.selectlistobj', this.selectlistobj)
+      // console.log('this.selectlist', this.selectlist)
+      // console.log('没删除-this.optListId', this.optListId)
+      this.optListId = '';
+      for (let i in this.selectlistobj) {
+        if (this.optListId === '') {
+          this.optListId = `${this.selectlistobj[i].id}`
+        } else {
+          this.optListId = `${this.optListId},${this.selectlistobj[i].id}`
+        }
+        // if (val === this.selectlistobj[i].optListName) {
+        //   for (let k in strArr) {
+        //     if (strArr[k] === this.selectlistobj[i].optListId.toString()) {
+        //       this.optListId = '';
+        //       strArr.splice(k, 1);
+        //       console.log('strArr', strArr)
+        //       this.optListId = strArr.join(',');
+        //       console.log('this.optListId', this.optListId)
+        //     }
+        //   }
+        // }
+      }
+      console.log('删除-this.optListId', this.optListId)
+    },
+    // 添加筛选条件
+    submitFormAdd() {
+      for (let i in this.options2) {
+        if (this.form.region === this.options2[i].label) {
+          if (!this.selectlist.includes(this.options2[i].label)) {
+            this.selectlist.push(this.options2[i].label);
+            let obj1 = {
+              'label': this.options2[i].label,
+              'id': this.options2[i].id,
+              'name': this.options2[i].name
+            }
+            this.selectlistobj.push(obj1);
+            if (this.optListId === '') {
+              this.optListId = `${this.options2[i].id}`
+            } else {
+              this.optListId = `${this.optListId},${this.options2[i].id}`
+            }
+          }
+        }
+      }
+      // for (let i in this.options1) {
+      //   if (this.form.region2 === this.options1[i].optListId) {
+      //     if (!this.selectlist.includes(this.options1[i].optListName)) {
+      //       this.selectlist.push(this.options1[i].optListName);
+      //       let obj1 = {
+      //         'optListName': this.options1[i].optListName,
+      //         'optListId': this.options1[i].optListId
+      //       }
+      //       this.selectlistobj.push(obj1);
+      //       if (this.optListId === '') {
+      //         this.optListId = `${this.options1[i].optListId}`
+      //       } else {
+      //         this.optListId = `${this.optListId},${this.options1[i].optListId}`
+      //       }
+      //     }
+      //   }
+      // }
+    },
+    // 增加
+    submitAddBtn() {
+      let param = {};
+      if (this.message === undefined) {
+        param = {
+          'rptName': this.form.rptName,
+          'rptDesc': this.form.rptDesc,
+          'optListId': this.optListId,
+          'titleName': this.form.titleName,
+          'content': this.form.content,
+          'memo': this.form.memo,
+          'dbsource': this.dbsource
+        }
+      } else {
+        param = {
+          'rptId': this.message.rptId,
+          'rptName': this.form.rptName,
+          'rptDesc': this.form.rptDesc,
+          'optListId': this.optListId,
+          'titleName': this.form.titleName,
+          'content': this.form.content,
+          'memo': this.form.memo,
+          'dbsource': this.dbsource
+        }
+      }
+      if (this.form.rptName === '') {
+        this.$message('报表名称不能为空！');
+      } else if (this.selectlist.length === 0) {
+        this.$message('筛选条件不能为空！');
+      } else if (this.form.titleName === '') {
+        this.$message('表头配置不能为空！');
+      } else if (this.form.content === '') {
+        this.$message('配置内容不能为空！');
+      } else {
+        // saveReportConf
+        if (this.message === undefined) {
+          addConf(param).then((res) => {
+            if (res.status === 200) {
+              // console.log('add---1111: ', res);
+              console.log('param: ', param);
+              this.$router.push({
+                path: `/reportlist`
+              });
+            }
+          })
+        } else {
+          saveReportConf(param).then((res) => {
+            // console.log('save-1: ', res);
+            if (res.status === 200) {
+              // console.log('param-: ', param);
+              // this.$router.push({
+              //   path: `/reportmodify`
+              // });
+              this.$router.go(0)
+            }
+          })
+        }
+      }
+    },
+    // 返回
+    returnBtn() {
+      this.$router.push({
+        path: `/reportlist`
+      });
+    }
+  }
+}
+</script>

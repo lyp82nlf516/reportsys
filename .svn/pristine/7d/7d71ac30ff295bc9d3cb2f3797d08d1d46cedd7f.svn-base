@@ -1,0 +1,512 @@
+<template>
+  <div class="main">
+    <div class="topdiv">
+      <div class="radiodiv">
+        <el-radio-group
+          class="rg"
+          v-model="treetype"
+          size="small"
+          @change="radiochangehandler"
+        >
+          <el-radio label="menu">菜单目录</el-radio>
+          <el-radio label="imgrptmenu">图形报表目录</el-radio>
+        </el-radio-group>
+      </div>
+      <div class="btndiv">
+        <el-button
+          class="eb"
+          type="primary"
+          @click="initaddmenu"
+          plain
+        ><i class="el-icon-setting"></i></el-button>
+      </div>
+    </div>
+    <div class="treediv">
+      <div class="treecontainerdiv">
+        <el-tree
+          id="menutree"
+          class="eltree"
+          ref="eltree"
+          :data="treedata"
+          node-key="privilegeMenuId"
+          default-expand-all
+          :expand-on-click-node="false"
+          :render-content="renderContent"
+          :props="defaultProps"
+        >
+        </el-tree>
+      </div>
+      <div class="formdiv">
+        <el-form
+          ref="transdata"
+          :model="transdata"
+          class="elform"
+          label-width="120px"
+          v-if="disform"
+        >
+          <el-input
+            v-model="transdata.privilegeMenuLayer"
+            type="hidden"
+          ></el-input>
+          <el-input
+            v-model="transdata.treetype"
+            type="hidden"
+          ></el-input>
+          <el-input
+            v-model="transdata.privilegeMenuPcode"
+            type="hidden"
+          ></el-input>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="父节点名称">
+                <el-input
+                  v-model="transdata.privilegeMenuPname"
+                  :disabled="true"
+                  size="small"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="节点序号">
+                <el-input
+                  v-model="transdata.privilegeMenuSeq"
+                  :disabled="true"
+                  size="small"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="节点名称">
+                <el-input
+                  v-model="transdata.privilegeMenuName"
+                  size="small"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="节点类型">
+                <el-radio-group
+                  v-model="transdata.privilegeMenuType"
+                  size="small"
+                >
+                  <el-radio
+                    label="1"
+                    :disabled="transdata.disradio1"
+                  >页面</el-radio>
+                  <el-radio
+                    label="0"
+                    :disabled="transdata.disradio0"
+                  >菜单</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item
+                label="节点编码"
+                v-if="transdata.privilegeMenuType === '1'"
+              >
+                <el-input
+                  v-model="transdata.privilegeMenuCode"
+                  size="small"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                label="节点路径"
+                v-if="transdata.privilegeMenuType === '1'"
+              >
+                <el-input
+                  v-model="transdata.privilegeMenuCode"
+                  size="small"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="备注">
+                <el-input
+                  type="textarea"
+                  :rows="5"
+                  v-model="transdata.remark"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-form-item label="">
+              <el-button
+                type="primary"
+                @click="onSubmit('transdata')"
+                size="small"
+              >保存</el-button>
+              <el-button
+                type="primary"
+                @click="onClear"
+                size="small"
+              >取消</el-button>
+            </el-form-item>
+          </el-row>
+        </el-form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss">
+.main {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: auto;
+  padding: 10px;
+  background: #f7f7f5;
+}
+.topdiv {
+  width: calc(100% - 2px);
+  height: calc(8% - 2px);
+  border: 1px solid #ebeef5;
+  background-color: #ffffff;
+}
+.radiodiv {
+  width: 50%;
+  float: left;
+}
+.btndiv {
+  width: 48%;
+  float: right;
+  background-color: #ffffff;
+  .el-button--primary {
+    color: #409eff;
+    background: none;
+    border: none;
+    margin-top: 3px;
+  }
+  .el-button--primary:hover {
+    background: none;
+    border: none;
+    color: #295a94;
+  }
+}
+.rg {
+  margin-top: 2.5%;
+  margin-left: 3%;
+}
+.eb {
+  //margin-top: 0.9%;
+  margin-left: 90%;
+}
+.el-button--text:hover {
+  background: none;
+}
+.el-radio__input.is-checked .el-radio__inner {
+  background: #7b7eff;
+  border-color: #7b7eff;
+}
+.el-radio__input.is-checked + .el-radio__label {
+  color: #7b7eff;
+}
+.treediv {
+  width: calc(100% - 2px);
+  height: calc(92% - 12px);
+  margin-top: 10px;
+  overflow: auto;
+  border: 1px solid #ebeef5;
+  ::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width: 7px;
+    /*高宽分别对应横竖滚动条的尺寸*/
+    height: 5px;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0);
+    background: rgba(0, 0, 0, 0.4);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    /*滚动条里面小方块*/
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+  }
+  ::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0);
+  }
+}
+.custom-tree-node {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-right: 8px;
+}
+.spanbtn {
+  // float: right;
+  // margin-right: 1%;
+}
+.treecontainerdiv {
+  width: calc(20% - 1px);
+  height: 100%;
+  overflow: auto;
+  float: left;
+  background: #fff;
+  border-right: 1px solid #ebeef5;
+}
+.eltree {
+  height: 99%;
+  overflow: auto;
+  .el-icon-plus:before {
+    color: #7b7eff;
+  }
+  .el-icon-edit {
+    color: #7b7eff;
+  }
+  .el-icon-delete {
+    color: #7b7eff;
+  }
+}
+.formdiv {
+  float: right;
+  width: calc(78% - 20px);
+  height: 100%;
+  margin: 0 10px;
+  overflow: auto;
+}
+.elform {
+  overflow: auto;
+  .el-button--primary {
+    background-color: #7b7eff;
+    border-color: #7b7eff;
+  }
+  .el-button--primary.is-active,
+  .el-button--primary:active {
+    background-color: #7b7eff;
+    border-color: #7b7eff;
+  }
+  .el-button--primary:focus,
+  .el-button--primary:hover {
+    background-color: #7b7eff;
+    border-color: #7b7eff;
+    opacity: 0.9;
+  }
+}
+</style>
+
+<script>
+// 引入公共js方法
+import {
+  initmenudata,
+  addoreditmenu,
+  delmenus
+} from '@/services/query';
+export default {
+  data() {
+    return {
+      // 初始化定义页面从参数
+      defaultProps: {
+        children: 'subList',
+        label: 'privilegeMenuName',
+        id: 'privilegeMenuId'
+      },
+      treetype: 'menu', // 初始化查询类型
+      btreetype: true,
+      disform: false, // form表单是否显示
+      initbtn: false, // 页面右上角初始化增加按钮显示
+      initseq: 0, // 初始化序号
+      treedata: [], // 定义返回菜单集合
+      transdata: {} // 定义新增、修改传递参数
+    }
+  },
+  mounted() {
+    // 调用方法为参数赋值
+    this.initmenudata();
+  },
+  updated() {
+    // this.resetmenutree();
+  },
+  methods: {
+    // 定义增删改等操作
+    initmenudata() {
+      initmenudata(this.treetype).then((res) => {
+        if (res.status === 200) {
+          this.treedata = res.data;
+          if (res.data.length > 0) {
+            this.initbtn = false;
+            this.initseq = res.data.length;
+          } else {
+            this.initbtn = true;
+            this.initseq = 0;
+          }
+        }
+      });
+    },
+    initaddmenu() {
+      $('.el-button--primary').css({ 'background': 'none', 'color': '#295a94', 'border': 'none' });
+      this.disform = true;
+      this.transdata = {
+        privilegeMenuId: '',
+        privilegeMenuCode: '',
+        privilegeMenuName: '',
+        privilegeMenuSeq: this.initseq + 1,
+        privilegeMenuPcode: '',
+        privilegeMenuPname: '',
+        privilegeMenuType: this.treetype === 'menu' ? '1' : '0', // 默认是页面
+        privilegeMenuUrl: '',
+        privilegeMenuLayer: 1,
+        treetype: this.treetype,
+        remark: '',
+        disradio1: this.treetype === 'imgrptmenu'
+      }
+    },
+    addmenu(node, data) {
+      // 给form表单渲染数据
+      this.disform = true;
+      this.transdata = {
+        privilegeMenuId: '',
+        privilegeMenuCode: '',
+        privilegeMenuName: '',
+        privilegeMenuSeq: data.subList.length + 1,
+        privilegeMenuPcode: data.privilegeMenuId,
+        privilegeMenuPname: data.privilegeMenuName,
+        privilegeMenuType: this.treetype === 'menu' ? '1' : '0', // 默认是页面
+        privilegeMenuUrl: '',
+        privilegeMenuLayer: parseInt(data.privilegeMenuLayer) + 1,
+        treetype: this.treetype,
+        remark: '',
+        disradio1: this.treetype === 'imgrptmenu'
+      }
+    },
+    editmenu(node, data) {
+      // 给form表单渲染数据
+      this.disform = true;
+      this.transdata = {
+        privilegeMenuId: data.privilegeMenuId,
+        privilegeMenuCode: data.privilegeMenuCode,
+        privilegeMenuName: data.privilegeMenuName,
+        privilegeMenuSeq: data.privilegeMenuSeq,
+        privilegeMenuPcode: node.parent.data.privilegeMenuId,
+        privilegeMenuPname: node.parent.data.privilegeMenuName,
+        privilegeMenuType: data.privilegeMenuType, // 默认是页面
+        privilegeMenuUrl: data.privilegeMenuUrl,
+        privilegeMenuLayer: data.privilegeMenuLayer,
+        treetype: this.treetype,
+        remark: data.remark,
+        disradio1: data.privilegeMenuType === '0',
+        disradio0: data.privilegeMenuType === '1'
+      }
+    },
+    delmenu(node, data) {
+      console.log(data);
+      let val = this.dealids(data); // 递归处理当前节点及下级节点的id，拼成字符串返回给后台
+      let varArray = val.split(';');
+      this.delconfirm(varArray);
+    },
+    radiochangehandler(val) {
+      this.initmenudata();// 根据radio变化改变菜单的内容
+      this.onClear();// 初始化form表单
+    },
+    renderContent(h, { node, data, store }) {
+      if (data.privilegeMenuType === '0') {
+        return (
+          <span class="custom-tree-node">
+            <span>{node.label}</span>
+            <span class="spanbtn">
+              <el-button size="mini" type="text" on-click={() => this.addmenu(node, data)}><i class="el-icon-plus"></i></el-button>
+              <el-button size="mini" type="text" on-click={() => this.editmenu(node, data)}><i class="el-icon-edit"></i></el-button>
+              <el-button size="mini" type="text" on-click={() => this.delmenu(node, data)}><i class="el-icon-delete"></i></el-button>
+            </span>
+          </span>);
+      } else {
+        return (
+          <span class="custom-tree-node">
+            <span>{node.label}</span>
+            <span class="spanbtn">
+              <el-button size="mini" type="text" on-click={() => this.editmenu(node, data)}><i class="el-icon-edit"></i></el-button>
+              <el-button size="mini" type="text" on-click={() => this.delmenu(node, data)}><i class="el-icon-delete"></i></el-button>
+            </span>
+          </span>);
+      }
+    },
+    onSubmit(transdata) {
+      let val = this.transdata;
+      addoreditmenu(val).then((res) => {
+        $('.el-button--primary').css('color', '#409eff');
+        if (res.status === 200) {
+          this.returntrue('操作成功');
+          this.onClear();
+          this.initmenudata();
+        } else {
+          this.returnfalse('操作失败');
+        }
+      });
+    },
+    onClear() {
+      $('.el-button--primary').css('color', '#409eff');
+      this.disform = false;
+      this.transdata = {
+        privilegeMenuId: '',
+        privilegeMenuCode: '',
+        privilegeMenuName: '',
+        privilegeMenuSeq: '',
+        privilegeMenuPcode: '',
+        privilegeMenuPname: '',
+        privilegeMenuType: '',
+        privilegeMenuUrl: '',
+        privilegeMenuLayer: '',
+        treetype: '',
+        remark: ''
+      }
+    },
+    dealids(data) {
+      let ids = data.privilegeMenuId;
+      if (data.subList.length > 0) {
+        for (let item in data.subList) {
+          ids = ids + ';' + this.dealids(data.subList[item]);
+        }
+      }
+      return ids;
+    },
+    returnfalse(val) {
+      this.$message.error(val);
+    },
+    returntrue(val) {
+      this.$message({
+        message: val,
+        type: 'success'
+      });
+    },
+    delconfirm(val) {
+      this.$confirm('此操作将该节点及所有下级节点, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delmenus(val).then((res) => {
+          if (res.status === 200) {
+            this.initmenudata();
+            this.returntrue('删除成功');
+          }
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
+    test(data) {
+      console.log(data);
+    }
+  }
+}
+</script>

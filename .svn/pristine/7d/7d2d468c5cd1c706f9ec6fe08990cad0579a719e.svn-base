@@ -1,0 +1,344 @@
+<template>
+  <div id="reportList">
+    <div class="reportListpage" v-if="tableshow">
+      <el-collapse v-model="activeNames">
+        <el-collapse-item v-if="false" title="查询条件" name="1" class="searchItem">
+          <div class="reportTitle">
+            <div class="inputbox">
+              <el-input v-model="keyinput" placeholder="请输入关键字查询" @keyup.native.enter="querydata" @blur="querydata"></el-input>
+              <el-button class="querybtn" @click="querydata" icon="search">查询</el-button>
+            </div>
+          </div>
+        </el-collapse-item>
+        <el-collapse-item title="查看/编辑报表" name="2">
+          <div class="reportTitle">
+            <div class="inputbox">
+              <el-input v-model="keyinput" placeholder="请输入关键字查询" @keyup.native.enter="querydata" @blur="querydata"></el-input>
+              <el-button class="querybtn" @click="querydata" icon="el-icon-search">查询</el-button>
+            </div>
+            <div class="btngroup">
+              <el-button @click="addopen" icon="el-icon-plus">新增</el-button>
+              <el-button @click="delopen" class="btnDel" icon="el-icon-delete">删除</el-button>
+            </div>
+            <div class="tableboxmsg">
+              <div class="content">
+                <div class="eletable">
+                  <el-table :data="tableData" style="width: 100%" border @selection-change="handleSelectionChange">
+                    <el-table-column type="selection" width="55"></el-table-column>
+                    <el-table-column prop="optListId" label="报表类型" type="text" size="small" show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="rptName" label="报表名称" type="text" size="small" show-overflow-tooltip> </el-table-column>
+                    <el-table-column label="操作" width="150">
+                      <template slot-scope="scope">
+                        <el-button type="text" size="small" @click="view(scope.row, scope.$index)">预览</el-button>
+                        <el-button type="text" size="small" @click="edit(scope.row, scope.$index)">修改</el-button>
+                        <el-button type="text" size="small">配置</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <div class="paginationbox">
+                    <el-pagination @current-change="currentpagechange" :total="total" :current-page="offset" :page-size="pageSize" layout="prev, pager, next, total, jumper">
+                    </el-pagination>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-collapse-item>
+      </el-collapse>
+    </div>
+    <editBox v-if="reportListBox" v-bind:message="parentMsg"></editBox>
+    <viewBox v-if="viewBox" v-bind:message="parentMsg1"></viewBox>
+  </div>
+</template>
+
+<style lang="scss">
+.custom-tree-node {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-right: 8px;
+}
+.custom-tree-container {
+  overflow: auto;
+}
+.block {
+  width: 50%;
+  float: left;
+}
+#reportList {
+  width: 100%;
+  height: 100%;
+  .reportListpage {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    overflow: auto;
+    padding: 10px;
+    .searchItem {
+      margin-bottom: 10px;
+    }
+    .el-button--text:hover {
+      background: none;
+    }
+    .reportTitle {
+      background: #fff;
+      padding: 10px 0 5px 10px;
+      padding: 0 5px;
+      margin: 0px 0px 10px 0;
+      // border: 1px solid #eee;
+      //border-left-width: 5px;
+      border-radius: 3px;
+      //border-left-color: #4074e1;
+      h4 {
+        padding: 10px;
+        margin: 0;
+        color: #666;
+        background: #f5f5f5;
+        border-radius: 3px;
+        border-left: 5px solid #f5f5f5;
+        border: 1px solid #dfe6ec;
+      }
+      .el-table__header-wrapper {
+        th {
+          padding: 11px 0;
+          padding: 4px 0;
+          background: #f5f7fb;
+        }
+      }
+      .el-table__body-wrapper {
+        td {
+          padding: 6px 0;
+          padding: 0;
+        }
+      }
+      .el-button--text {
+        color: rgba(123, 126, 255, 0.9);
+      }
+      .el-checkbox__inner::after {
+        top: 3px;
+        left: 6px;
+      }
+      .el-checkbox__input.is-indeterminate .el-checkbox__inner::before {
+        top: 7px;
+      }
+      .el-checkbox__input.is-checked .el-checkbox__inner,
+      .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+        background-color: #6d71ef;
+        border-color: #6d71ef;
+      }
+      .el-checkbox__inner:hover {
+        border-color: #6d71ef;
+      }
+      .el-checkbox__inner {
+        width: 18px;
+        height: 18px;
+      }
+      .el-table .cell,
+      .el-table th div,
+      .el-table--border td:first-child .cell,
+      .el-table--border th:first-child .cell {
+        padding-left: 14px;
+      }
+      .el-table .cell {
+        .el-checkbox__inner {
+          // width: 18px;
+          // height: 18px;
+        }
+      }
+    }
+    .el-collapse-item__header {
+      padding-left: 15px;
+      border-bottom: 1px solid #dfe6ec;
+      .el-collapse-item__arrow {
+        float: left;
+      }
+    }
+    .el-collapse-item__content {
+      padding: 0 10px;
+    }
+    .tableboxmsg {
+      .paginationbox {
+        margin-top: 10px;
+      }
+    }
+    .inputbox {
+      margin: 10px auto;
+      float: left;
+      .el-input {
+        width: 240px;
+      }
+      .querybtn {
+        margin-left: 10px;
+      }
+      .el-button {
+        padding: 12px;
+      }
+    }
+    .el-pagination {
+      text-align: right;
+    }
+    .el-table th.gutter {
+      display: table-cell !important;
+    }
+    .btngroup {
+      .el-button {
+        background: rgba(123, 126, 255, 0.9);
+        border: 1px solid rgba(123, 126, 255, 0.9);
+        color: #fff;
+      }
+      // margin: 5px auto 15px;
+      margin: 15px auto 0px;
+      float: right;
+      .btnDel {
+        // float: right;
+      }
+      .el-button {
+        padding: 8px;
+      }
+    }
+  }
+}
+</style>
+
+<script>
+import {
+  listConf,
+  updateConf,
+  delConf,
+  viewlist
+} from '@/services/query';
+import editBox from './reportconfigure.vue';
+import viewBox from './reportpart.vue';
+export default {
+  data() {
+    return {
+      tableData: [],
+      offset: 1,
+      pageSize: 10,
+      keyinput: '',
+      total: 0,
+      selectdata: [],
+      tableshow: true,
+      reportListBox: false,
+      viewBox: false,
+      parentMsg: {
+        rptName: '',
+        rptDesc: '',
+        optListId: '',
+        titleName: '',
+        content: '',
+        memo: '',
+        option: [],
+        rptId: '',
+        dbsource: ''
+      },
+      parentMsg1: {
+        reportTitle: '',
+        tableTitle: [],
+        dateControl: [],
+        reportId: '',
+        optListId: ''
+      },
+      activeNames: ['2'],
+    }
+  },
+  created() { },
+  mounted() {
+    this.Getdata();
+  },
+  computed: {},
+  components: { editBox, viewBox },
+  methods: {
+    // 获取数据
+    Getdata() {
+      let val = {
+        'rptName': this.keyinput,
+        'offset': this.offset,
+        'pageSize': this.pageSize
+      };
+      listConf(val).then((res) => {
+        if (res.status === 200) {
+          this.tableData = res.data.rows;
+          this.total = res.data.total;
+        }
+      })
+    },
+    // 列表进行选择
+    handleSelectionChange(select) {
+      this.selectdata = JSON.parse(JSON.stringify(select));
+      // console.log('selectdata', this.selectdata)
+    },
+    // 点击查询
+    querydata() {
+      this.Getdata();
+    },
+    // 删除
+    delopen() {
+      let del = [];
+      for (let i of this.selectdata) {
+        del.push(i.rptId);
+      }
+      // console.log('delConf', del)
+      delConf(del).then((res) => {
+        // console.log('delConf', del, res)
+        if (res.status === 200) {
+          this.Getdata();
+        }
+      })
+    },
+    // 新增
+    addopen() {
+      this.$router.push({
+        path: `/reportconfigure/`
+      });
+    },
+    // 修改回显数据
+    edit(row, index) {
+      // console.log('edit', row, index);
+      updateConf(row.rptId).then((res) => {
+        if (res.status === 200) {
+          this.reportListBox = true;
+          this.tableshow = false;
+          this.parentMsg.rptName = res.data.entity.rptName;
+          this.parentMsg.rptDesc = res.data.entity.rptDesc;
+          this.parentMsg.optListId = res.data.entity.optListId;
+          this.parentMsg.titleName = res.data.entity.titleName;
+          this.parentMsg.content = res.data.entity.content;
+          this.parentMsg.memo = res.data.entity.memo;
+          this.parentMsg.option = res.data.option;
+          this.parentMsg.rptId = row.rptId;
+          this.parentMsg.dbsource = row.dbsource;
+          // console.log('this.parentMsg:', this.parentMsg)
+          // this.$router.push({
+          //   path: `/reportconfigure/`
+          // });
+          // this.Getdata();
+        }
+      })
+    },
+    // 报表预览
+    view(row, index) {
+      viewlist(row.rptId).then((res) => {
+        if (res.status === 200) {
+          // this.$router.push({
+          //   path: `/reportpart/` + row.optListId
+          // });
+          this.viewBox = true;
+          this.tableshow = false;
+          this.parentMsg1.reportTitle = res.data.rptName;
+          this.parentMsg1.tableTitle = res.data.table1;
+          this.parentMsg1.dateControl = res.data.form;
+          this.parentMsg1.optListId = row.optListId;
+          this.parentMsg1.reportId = res.data.Id;
+        }
+      })
+    },
+    // 点击翻页
+    currentpagechange(val) {
+      this.offset = val;
+      this.Getdata();
+    }
+  }
+}
+</script>

@@ -1,0 +1,1709 @@
+<template>
+  <div class="createdbytemplate" id="createdbytemplate">
+    <div class="toolbox">
+      <div @click="select('bar')"><img
+          src="../../assets/img/imgchart/bar.png"
+          alt="柱状图"
+          srcset=""
+          title="柱状图"
+          width="22"
+        ></div>
+      <div @click="select('pie')"><img
+          src="../../assets/img/imgchart/pie.png"
+          alt="饼状图"
+          srcset=""
+          title="饼状图"
+          width="24"
+        ></div>
+      <div @click="select('line')"><img
+          src="../../assets/img/imgchart/line.png"
+          alt="折线图"
+          srcset=""
+          title="折线图"
+          width="30"
+        ></div>
+      <div @click="selectquery('select')"><img
+          src="../../assets/img/imgchart/select.png"
+          alt="下拉"
+          srcset=""
+          title="下拉"
+          width="24"
+        ></div>
+      <div @click="selecttext('text')"><img
+          src="../../assets/img/imgchart/text.png"
+          alt="文本"
+          srcset=""
+          title="文本"
+          width="20"
+        ></div>
+      <div @click="selectquery('input')"><img
+          src="../../assets/img/imgchart/input.png"
+          alt="输入框"
+          srcset=""
+          title="输入框"
+          width="24"
+        ></div>
+      <div @click="selectquery('date')"><img
+          src="../../assets/img/imgchart/time.png"
+          alt="时间"
+          srcset=""
+          title="时间"
+          width="24"
+        ></div>
+      <div @click="selectquery('val')"><img
+          src="../../assets/img/imgchart/jzd.png"
+          alt="键值对"
+          srcset=""
+          title="键值对"
+          width="24"
+        ></div>
+      <div @click="selecttable('list')"><img
+          src="../../assets/img/imgchart/table.png"
+          alt="表格"
+          srcset=""
+          title="表格"
+          width="24"
+        ></div>
+    </div>
+    <div class="templatebox">
+      <div
+        class="allcon dragbox"
+        id="dragbox"
+      >
+        <div
+          class="dragdom querybox"
+          v-for="(item, index) in querys"
+          :key="item.key"
+          :id="item.key"
+          :class="('querys' + index)"
+          :index="item.other"
+          :dragindex="index"
+          type="querys"
+        >
+          <div
+            class="content"
+            @contextmenu.prevent="editquery(item, index)"
+          >
+            <span class="inputlabel">{{item.label}}</span>
+            <div
+              class="inputdiv"
+              v-if="item.type === 'input'"
+            >
+              <el-input v-model="item.value"></el-input>
+            </div>
+            <div
+              class="inputdiv"
+              v-if="item.type === 'select'"
+            >
+              <el-select
+                v-model="item.value"
+                clearable
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="items in item.option"
+                  :key="items.value"
+                  :label="items.label"
+                  :value="items.value"
+                ></el-option>
+              </el-select>
+            </div>
+            <div
+              class="inputdiv"
+              v-if="item.type === 'date'"
+            >
+              <el-date-picker
+                format="yyyyMMdd"
+                v-model="item.value"
+                type="daterange"
+                placeholder="选择日期范围"
+              ></el-date-picker>
+            </div>
+            <div
+              class="inputdiv"
+              v-if="item.type === 'val'"
+            >
+              <el-input
+                v-if="item.value === '' || item.editshow"
+                v-model="item.value"
+                icon="close"
+                @click="delquery(index, item.dragid)"
+              ></el-input>
+              <span class="valspan">
+                {{item.value}}
+              </span>
+            </div>
+            <i
+              v-if="item.type !== 'val'"
+              class="el-icon-delete qicon"
+              @click='delquery(index, item.dragid)'
+            ></i>
+          </div>
+          <div class="handle handlequery"></div>
+          <el-popover
+            placement="top"
+            v-model="item.editshow"
+          >
+            <el-form
+              :rules="rules"
+              :ref="('querysform' + index)"
+              label-width="60px"
+              class="demo-ruleForm"
+            >
+              <el-form-item
+                label="label"
+                prop="xz"
+              >
+                <el-input
+                  type="textarea"
+                  v-model="item.label"
+                  :rows='1'
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="数据sql"
+                prop="yz"
+              >
+                <el-input
+                  type="textarea"
+                  v-model="item.sql"
+                  :rows='1'
+                ></el-input>
+              </el-form-item>
+              <el-form-item class="btnitem">
+                <el-button
+                  type="primary"
+                  @click="resetquery(item, index)"
+                >取消</el-button>
+                <el-button
+                  type="primary"
+                  @click="submitquery(item, index)"
+                >确定</el-button>
+              </el-form-item>
+            </el-form>
+          </el-popover>
+        </div>
+        <div
+          class="dragdom querybox"
+          v-for="(item, index) in text"
+          :key="item.key"
+          :id="item.key"
+          :class="('text' + index)"
+          :index="item.other"
+          :dragindex="index"
+          type="text"
+        >
+          <div class="content">
+            <div v-if="!item.editshow">
+              <el-input
+                v-if="item.position.type !== 'formname'"
+                class="input-new-tag"
+                placeholder="+ 文字"
+                icon="close"
+                v-model="item.data"
+                ref="saveTagInput"
+                size="mini"
+                @keyup.enter.native="submittext(item, index)"
+                @blur="submittext(item, index)"
+                @click='deltext(index, item.dragid)'
+              >
+              </el-input>
+              <el-input
+                v-else
+                class="input-new-tag"
+                placeholder="+ 文字"
+                v-model="item.data"
+                ref="saveTagInput"
+                size="mini"
+                @keyup.enter.native="submittext(item, index)"
+                @blur="submittext(item, index)"
+              >
+              </el-input>
+            </div>
+            <p v-else>
+              <span
+                v-if="item.data === ''"
+                class="textshow nodatatext"
+                @click="edittext(item, index)"
+              >请输入...</span>
+              <span
+                v-if="item.data !== ''"
+                class="textshow"
+                @click="edittext(item, index)"
+              >{{item.data}}</span>
+            </p>
+          </div>
+          <div class="handle handlequery"></div>
+        </div>
+        <div
+          class="dragdom chartbox"
+          v-for="(item, index) in charts"
+          :key="item.key"
+          :id="item.key"
+          :class="('charts' + index)"
+          :index="item.other"
+          :dragindex="index"
+          type="charts"
+        >
+          <div class="handle handlechart"></div>
+          <div
+            class="dragall"
+            :id="('chartszoom' + item.other)"
+          ></div>
+          <div
+            class="content"
+            @contextmenu.prevent="editcharts(item, index)"
+          >
+            <chart
+              :options="item.option"
+              auto-resize
+              :ref="item.key"
+            ></chart>
+          </div>
+          <i
+            class="el-icon-close delchart"
+            @click='delcharts(index, item.dragid)'
+          ></i>
+          <div
+            class="msgbox"
+            v-show='item.editshow'
+          >
+            <div class="msgconter">
+              <el-form
+                :rules="rules"
+                :ref="('chartsform' + index)"
+                label-width="50px"
+                class="demo-ruleForm"
+              >
+                <el-form-item
+                  label="x轴"
+                  prop="x"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.sql.x"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item
+                  label="y轴"
+                  prop="y"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.sql.y"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item
+                  label="z轴"
+                  prop="z"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.sql.z"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item
+                  label="SQL"
+                  prop="sql"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.sql.sql"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button
+                    type="primary"
+                    @click="submitForm(item, index)"
+                  >确定</el-button>
+                  <el-button @click="resetForm(item, index)">取消</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+        </div>
+        <div
+          class="dragdom listbox"
+          v-for="(item, index) in list"
+          :key="item.key"
+          :id="item.key"
+          :class="('list' + index)"
+          :index="item.other"
+          :dragindex="index"
+          type="list"
+        >
+          <div class="handle handlechart"></div>
+          <div
+            class="dragall"
+            :id="('listzoom' + item.other)"
+          ></div>
+          <div
+            class="content"
+            @contextmenu.prevent="editlist(item, index)"
+          >
+            <el-table
+              :data="item.data.rows"
+              border
+              height="270"
+            >
+              <el-table-column
+                v-for="col in item.data.cols"
+                :key="col.key"
+                :prop="col.key"
+                :label="col.label"
+                show-overflow-tooltip
+              >
+              </el-table-column>
+            </el-table>
+            <div class="paginationbox">
+              <el-pagination
+                :total="item.data.total"
+                :current-page="item.data.offset"
+                :page-size="item.data.pageSize"
+                layout="total, prev, pager, next, jumper"
+              >
+              </el-pagination>
+            </div>
+          </div>
+          <i
+            class="el-icon-close dellist"
+            @click='dellist(index, item.dragid)'
+          ></i>
+          <div
+            class="msgbox"
+            v-show='item.editshow'
+          >
+            <div class="msgconter">
+              <el-form
+                :rules="rules"
+                :ref="('listform' + index)"
+                label-width="50px"
+                class="demo-ruleForm"
+              >
+                <el-form-item
+                  label="表头"
+                  prop="title"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.title"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item
+                  label="SQL"
+                  prop="sql"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="item.sql"
+                    :rows='1'
+                  ></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button
+                    type="primary"
+                    @click="submitFormlist(item, index)"
+                  >确定</el-button>
+                  <el-button @click="resetFormlist(item, index)">取消</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <el-button
+        type="danger"
+        class="delbtn"
+        @click="delect"
+      >取消</el-button>
+      <el-button
+        type="primary"
+        class="savebtn"
+        @click="savetemplate"
+      >完成</el-button>
+    </div>
+  </div>
+</template>
+<style lang="scss">
+#createdbytemplate {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  padding: 2px;
+  overflow: hidden;
+  .toolbox {
+    width: 50px;
+    height: calc(100% - 4px);
+    float: left;
+    border: 1px solid #039df3;
+    // box-shadow: 0px 3px 3px 3px rgba(74, 160, 234, 0.39) inset;
+    > div {
+      text-align: center;
+    }
+  }
+  .templatebox {
+    width: calc(100% - 58px);
+    height: calc(100% - 4px);
+    float: left;
+    border: 1px solid #039df3;
+    margin-left: 1px;
+    overflow: auto;
+  }
+  .dragbox {
+    width: 100%;
+    position: relative;
+    height: calc(100% - 10px);
+  }
+  .dragdom {
+    position: absolute;
+  }
+  .chartbox {
+    height: 250px;
+    width: 300px;
+    .content {
+      width: 100%;
+      height: 100%;
+    }
+    .echarts {
+      width: calc(100% - 40px) !important;
+      height: 100% !important;
+    }
+    .msgbox {
+      width: 100%;
+      height: 100%;
+      background-color: rgba(250, 250, 250, 0.7);
+      position: absolute;
+      top: 0;
+      left: 0;
+      .msgconter {
+        width: 80%;
+        height: 200px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+        overflow: auto;
+      }
+      .el-form {
+        .el-form-item {
+          margin-bottom: 0px;
+        }
+        .el-form-item__label {
+          font-size: 12px;
+          padding: 11px 3px 11px 0;
+        }
+        .el-textarea__inner {
+          border: 1px solid blue;
+          padding: 2px 3px;
+        }
+      }
+      .el-button {
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 0;
+      }
+    }
+  }
+  .listbox {
+    background-color: #dfe6ec;
+    height: 300px;
+    width: 98%;
+    border: 1px solid #ccc;
+    .content {
+      width: 100%;
+      height: 100%;
+      .el-table {
+        width: 100%;
+        height: calc(100% - 36px) !important;
+      }
+    }
+    .el-table {
+      font-size: 12px;
+      .caret-wrapper {
+        width: 12px;
+        opacity: 0;
+      }
+      th > .cell:hover {
+        .caret-wrapper {
+          opacity: 1;
+        }
+      }
+      td {
+        height: 12px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+      .cell,
+      th > div {
+        padding-right: 0px;
+        padding-left: 2px;
+        line-height: 12px;
+      }
+    }
+    .msgbox {
+      width: 100%;
+      height: 100%;
+      background-color: rgba(250, 250, 250, 0.7);
+      position: absolute;
+      top: 0;
+      left: 0;
+      .msgconter {
+        width: 80%;
+        height: 200px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+        overflow: auto;
+      }
+      .el-form {
+        .el-form-item {
+          margin-bottom: 0px;
+        }
+        .el-form-item__label {
+          font-size: 12px;
+          padding: 11px 3px 11px 0;
+        }
+        .el-textarea__inner {
+          border: 1px solid blue;
+          padding: 2px 3px;
+        }
+      }
+      .el-button {
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 0;
+      }
+    }
+  }
+  .activedom {
+    box-shadow: 3px 3px 5px #ccc;
+    .content {
+      box-shadow: -3px -3px 5px #ccc;
+    }
+  }
+  .querybox {
+    height: 30px;
+    .content {
+      height: 100%;
+      .inputlabel {
+        float: left;
+        height: 30px;
+        color: #000;
+        line-height: 30px;
+        margin-right: 5px;
+      }
+      .inputdiv {
+        float: left;
+      }
+      .el-input {
+        font-size: 12px;
+      }
+      .qicon {
+        float: left;
+        height: 30px;
+        width: 16px;
+        line-height: 30px;
+        color: #fff;
+        background-color: blue;
+      }
+      .el-input__inner {
+        border: 1px solid blue;
+        height: 30px;
+        border-radius: 0;
+      }
+      .input-new-tag {
+        .el-input__inner {
+          border: 1px solid #bfcbd9;
+          border-radius: 4px;
+        }
+      }
+      .textshow {
+        color: #000;
+        padding: 0 10px;
+      }
+      .valspan {
+        line-height: 32px;
+      }
+    }
+    .el-popover {
+      z-index: 2009;
+      .el-form {
+        .el-form-item {
+          margin-bottom: 0px;
+        }
+        .el-form-item__label {
+          font-size: 12px;
+        }
+        .el-textarea__inner {
+          border: 1px solid blue;
+          padding: 2px 3px;
+        }
+        .el-form-item__content {
+          //  margin-left: 10px!important;
+        }
+        .btnitem {
+          .el-form-item__content {
+            margin-left: 40px;
+          }
+        }
+      }
+      .el-button {
+        padding: 5px 10px;
+        font-size: 12px;
+        float: right;
+        margin-top: 5px;
+      }
+    }
+    .nodatatext {
+      color: #ccc !important;
+    }
+  }
+  .delchart {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    margin: auto;
+    right: -12px;
+    top: 10px;
+    color: blue;
+    cursor: pointer;
+  }
+  .dellist {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    margin: auto;
+    right: -12px;
+    top: 10px;
+    color: blue;
+    cursor: pointer;
+  }
+  // .handle {
+  //     width: 40px;
+  //     height: 40px;
+  //     position: absolute;
+  //     margin: auto;
+  //     left: 0;
+  //     right: 0;
+  // }
+  .handlechart {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    margin: auto;
+    top: -20px;
+    left: 0;
+    right: 0;
+    background: url("../../assets/img/imgchart/but.png");
+    background-size: 100% 100%;
+    cursor: move;
+    opacity: 0.3;
+    z-index: 999;
+  }
+  .handlequery {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: -20px;
+    background: url("../../assets/img/imgchart/but.png");
+    background-size: 100% 100%;
+    cursor: move;
+    opacity: 0;
+  }
+  .handle:hover {
+    opacity: 1;
+  }
+  .handlequery:hover {
+    opacity: 0.9;
+  }
+  .dragall {
+    bottom: 0px;
+    right: 0px;
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: url("../../assets/img/iconhead/Dragiconleft.png");
+    background-size: 100% 100%;
+    cursor: nw-resize;
+  }
+  .savebtn {
+    position: fixed;
+    bottom: 10px;
+    right: 5px;
+    z-index: 9;
+  }
+  .delbtn {
+    position: fixed;
+    bottom: 10px;
+    right: 70px;
+    z-index: 9;
+  }
+  .el-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 0;
+  }
+}
+</style>
+<script>
+import Draggabilly from 'draggabilly';
+import echarts from 'echarts';
+import {
+  getDragComponent,
+  dragImageData,
+  dragComponentSingle,
+  delDragComponent,
+  delDragComponentSingle,
+  editAllDragComponent,
+  editDragComponent,
+  dragListData
+} from '@/services/query';
+// select 'beijing' as city ,'01' as month,'100' as data from dual union all select 'beijing' as city ,'02' as month,'800' as data from dual union all select 'beijing' as city ,'03' as month,'300' as data from dual union all select 'beijing' as city ,'04' as month,'600' as data from dual union all select 'beijing' as city ,'05' as month,'100' as data from dual union all select 'beijing' as city ,'06' as month,'900' as data from dual union all select 'beijing' as city ,'07' as month,'200' as data from dual union all select 'beijing' as city ,'08' as month,'600' as data from dual union all select 'shanghai' as city ,'01' as month,'100' as data from dual union all select 'shanghai' as city ,'02' as month,'400' as data from dual union all select 'shanghai' as city ,'03' as month,'700' as data from dual union all select 'shanghai' as city ,'04' as month,'200' as data from dual union all select 'shanghai' as city ,'05' as month,'500' as data from dual union all select 'shanghai' as city ,'06' as month,'800' as data from dual union all select 'shanghai' as city ,'07' as month,'300' as data from dual  union all select 'shanghai' as city ,'08' as month,'600' as data from dual
+export default {
+  data() {
+    return {
+      id: this.$route.params.id,
+      querys: [],
+      charts: [],
+      text: [],
+      list: [],
+      ruleForm: {
+        xz: '',
+        yz: ''
+      },
+      chartsi: 0,
+      querysi: 0,
+      texti: 0,
+      listi: 0,
+      rules: {
+        x: '',
+        y: ''
+      },
+      visible2: false,
+      formname: '',
+      temparam: {},
+      option: {
+        color: ['#0c51ec', '#e730bb', '#61a0a8', '#d48265', '#91c7ae', '#749f83', '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'],
+        dataZoom: [{
+          type: 'inside',
+          realtime: true,
+        }],
+        grid: {
+          bottom: 30,
+          right: 0,
+        },
+        legend: {
+          data: ['数据1', '数据2'],
+          top: 20,
+        },
+        xAxis: [{
+          type: 'category',
+          data: [],
+        }],
+        yAxis: {
+          type: 'value',
+          splitLine: {
+            show: false
+          }
+        },
+        series: []
+      },
+    }
+  },
+  mounted() {
+    // console.log('this.$route.params.id', this.$route.params.id);
+    let dragDom = this.dragDom = new Drag();
+    dragDom.listenevent();
+    console.log('echarts', echarts);
+    this.GetDragComponent();
+  },
+  // 此处优化的部分很多，以后有时间再优化（ps: 很多函数可以抽象出来直接调用）by xx
+  methods: {
+    // 完成的最后一步保存（ps: 感觉没什么意义，）
+    savetemplate() {
+      let param = {
+        query: JSON.parse(JSON.stringify(this.querys)).map((item) => {
+          item.position = JSON.stringify(item.position);
+          return item
+        }),
+        charts: JSON.parse(JSON.stringify(this.charts)).map((item) => {
+          item.data = JSON.stringify(item.data);
+          item.position = JSON.stringify(item.position);
+          item.sql = JSON.stringify(item.sql);
+          return item
+        }),
+        text: JSON.parse(JSON.stringify(this.text)).map((item) => {
+          item.position = JSON.stringify(item.position);
+          return item
+        }),
+        list: JSON.parse(JSON.stringify(this.list)).map((item) => {
+          item.position = JSON.stringify(item.position);
+          item.data = JSON.stringify(item.data);
+          return item
+        })
+      }
+      // console.log('param', param);
+      editAllDragComponent(param).then((res) => {
+        // console.log('res', res);
+      })
+    },
+    // 文字组件的方法
+    handleInputConfirm(index) {
+      this.text[index].editshow = true;
+    },
+    // 设置初始位置
+    getinitposition() {
+      for (let item of this.querys) {
+        if (item.top !== '') {
+          $(`#${item.key}`).css({
+            top: item.position.top,
+            left: item.position.left
+          })
+        }
+      }
+      for (let i in this.charts) {
+        let css = {};
+        if (this.charts[i].width !== '') {
+          css.width = this.charts[i].position.width;
+          css.height = this.charts[i].position.height;
+        }
+        if (this.charts[i].top !== '') {
+          css.top = this.charts[i].position.top;
+          css.left = this.charts[i].position.left;
+        }
+        $(`#${this.charts[i].key}`).css(css);
+        this.$refs[`${this.charts[i].key}`][0].resize();
+      }
+      for (let item of this.text) {
+        if (item.top !== '') {
+          $(`#${item.key}`).css({
+            top: item.position.top,
+            left: item.position.left
+          })
+        }
+      }
+      for (let item of this.list) {
+        let css = {};
+        if (item.width !== '') {
+          css.width = item.position.width;
+          css.height = item.position.height;
+        }
+        if (item.top !== '') {
+          css.top = item.position.top;
+          css.left = item.position.left;
+        }
+        $(`#${item.key}`).css(css);
+      }
+      this.$nextTick(() => {
+        let dragDom = this.dragDom = new Drag();
+        dragDom.listenevent(this);
+        for (let item of this.charts) {
+          dragDom.dragzoom(`chartszoom${item.other}`, `${item.key}`, this.$refs[`${item.key}`]);
+        }
+        for (let item of this.list) {
+          dragDom.dragzoom(`listzoom${item.other}`, `${item.key}`, this.$refs[`${item.key}`]);
+        }
+      });
+    },
+    // 得到数据库数据，作为初始化数据
+    GetDragComponent() {
+      getDragComponent({
+        uniflag: this.id,
+        dragType: ''
+      }).then((res) => {
+        if (res.status === 200) {
+          this.delinitdata(res.data);
+          // console.log('this.delinitdata', res.data)
+        }
+      })
+    },
+    // 处理数据
+    delinitdata(data) {
+      let param = JSON.parse(JSON.stringify(data));
+      // console.log('-----param', param);
+      for (let i in param.charts) {
+        param.charts[i].position = JSON.parse(param.charts[i].position);
+        param.charts[i].data = JSON.parse(param.charts[i].data);
+        param.charts[i].sql = JSON.parse(param.charts[i].sql);
+        let str = param.charts[i].sql.sql.replace(/[\r\n]/g, ' ');
+        param.charts[i].sql.sql = str;
+        param.charts[i].option = JSON.parse(JSON.stringify(this.option));
+        this.chartsi = Math.max(this.chartsi, parseInt(param.charts[i].other));
+      }
+      for (let i in param.text) {
+        param.text[i].position = JSON.parse(param.text[i].position);
+        this.texti = Math.max(this.texti, parseInt(param.text[i].other));
+        if (param.text[i].position.type === 'formname') {
+          this.formname = param.text[i].data;
+        }
+      }
+      for (let i in param.query) {
+        param.query[i].position = JSON.parse(param.query[i].position);
+        this.querysi = Math.max(this.querysi, parseInt(param.query[i].other));
+      }
+      for (let i in param.list) {
+        param.list[i].position = JSON.parse(param.list[i].position);
+        param.list[i].data = JSON.parse(param.list[i].data);
+        this.listi = Math.max(this.listi, parseInt(param.list[i].other));
+      }
+      for (let item of this.text) {
+        item.uniname = this.formname;
+      }
+      for (let item of this.querys) {
+        item.uniname = this.formname;
+      }
+      for (let item of this.charts) {
+        item.uniname = this.formname;
+      }
+      for (let item of this.list) {
+        item.uniname = this.formname;
+      }
+      this.chartsi++;
+      this.texti++;
+      this.querysi++;
+      this.listi++;
+      this.charts = param.charts;
+      this.querys = param.query;
+      this.text = param.text;
+      this.list = param.list;
+      this.$forceUpdate();
+      // console.log('this.id:', this.charts)
+      this.getdragImageData(this.id);
+      this.$nextTick(() => {
+        this.getinitposition();
+      });
+    },
+    // 设置图片的数据 设置list
+    getchartsdata(res) {
+      if (res.status === 200) {
+        for (let i in res.data) {
+          if (i.indexOf('charts') > -1) {
+            // 如果是图形的
+            let series;
+            let temp;
+            for (let j in this.charts) {
+              if (this.charts[j].key === i) {
+                temp = j;
+              }
+            }
+            if (this.charts[temp].type === 'pie') {
+              series = [{
+                name: res.data[i].z[0],
+                type: this.charts[temp].type,
+                data: res.data[i].y[0].map((yitem, index) => {
+                  return ({ value: yitem, name: res.data[i].x[index] })
+                }),
+              }]
+              this.charts[temp].option.legend.data = res.data[i].x;
+              this.charts[temp].option.series = JSON.parse(JSON.stringify(series));
+            } else if (this.charts[temp].type === 'bar' || this.charts[temp].type === 'line') {
+              if (res.data[i].y.length === 1) {
+                series = [{
+                  type: this.charts[temp].type,
+                  data: res.data[i].y[0],
+                }]
+              } else if (res.data[i].y.length === 0) {
+                series = [];
+              } else if (res.data[i].y.length > 1) {
+                series = res.data[i].y.map((item, index) => {
+                  return {
+                    name: res.data[i].z[index],
+                    type: this.charts[temp].type,
+                    data: item
+                  }
+                })
+              }
+              this.charts[temp].option.xAxis[0].data = res.data[i].x;
+              this.charts[temp].option.legend.data = res.data[i].z;
+              this.charts[temp].option.series = JSON.parse(JSON.stringify(series));
+              this.$forceUpdate();
+            }
+          } else if (i === 'querylist') {
+            // 如果是筛选条件
+            for (let item of res.data[i]) {
+              for (let k in this.querys) {
+                if (this.querys[k].key === item.name) {
+                  this.querys[k].option = item.option;
+                  this.querys[k].value = item.value;
+                }
+              }
+            }
+            this.$forceUpdate();
+          } else if (i.indexOf('list') > -1) {
+            for (let n in this.list) {
+              if (this.list[n].key === i) {
+                this.list[n].data.cols = res.data[i];
+              }
+            }
+          }
+        }
+      }
+      let param = {
+        ids: this.id, // 报表ID
+        offset: 0, // 当前第几页
+        pageSize: 10, // 每页显示多少条
+      }
+      this.DragListData(param);
+    },
+    // 得到图形信息
+    getdragImageData(val) {
+      // console.log('dragImageData-----图形:', val)
+      dragImageData(val).then(res => {
+        // console.log('dragImageData-图形:', res, val)
+        this.getchartsdata(res);
+      })
+    },
+    // dragListData
+    DragListData(item) {
+      dragListData(item).then((res) => {
+        // console.log('DragListData-res', res);
+        // {tableList:[{rows:[],tableID: '', total: 1234}]}
+        if (res.status === 200) {
+          for (let i in res.data.tableList) {
+            for (let j in this.list) {
+              if (res.data.tableList[i].tableID === this.list[j].key) {
+                this.list[j].data.rows = res.data.tableList[i].rows;
+                this.list[j].data.total = res.data.tableList[i].total;
+              }
+            }
+          }
+        }
+      })
+    },
+    // 记录位置
+    setpositiondata(type, index, left, top) {
+      this[type][index].position.left = left;
+      this[type][index].position.top = top;
+    },
+    // 记录宽高
+    setpositiionbox(type, index, width, height) {
+      this[type][index].position.width = width;
+      this[type][index].position.height = height;
+    },
+    select(data) {
+      let param = {
+        uniname: this.formname,
+        activeflag: false, // 新增加的属性，默认为false
+        editshow: false, // 新增加的属性，默认为false
+        other: this.chartsi,
+        type: data,
+        key: `charts${this.chartsi}`,
+        sql: { x: '', y: '', z: '', sql: '' },
+        position: {
+          width: '',
+          height: '',
+          top: '',
+          left: ''
+        },
+        data: {
+          x: [],
+          y: [],
+        },
+        uniflag: this.$route.params.id,
+        paramtype: 'charts'
+      };
+      let val = Object.assign({}, param, {
+        position: JSON.stringify(param.position),
+        data: JSON.stringify(param.data),
+        sql: JSON.stringify(param.sql),
+      }
+      );
+      let that = this;
+      dragComponentSingle(val).then((res) => {
+        // console.log('res', res);
+        if (res.status === 200) {
+          param = Object.assign(param, {
+            value: res.data.value,
+            uniname: res.data.uniname,
+            dragid: res.data.dragid,
+            id: res.data.id,
+            label: res.data.label,
+            style: res.data.style,
+            option: JSON.parse(JSON.stringify(this.option))
+          });
+          this.charts.push(param);
+          that.$nextTick(() => {
+            that.initposition('charts');
+            let dragDom = that.dragDom = new Drag();
+            dragDom.listenevent(that);
+            dragDom.dragzoom(`chartszoom${that.chartsi}`, `charts${that.chartsi}`, that.$refs[`charts${that.chartsi}`]);
+            that.chartsi++;
+          })
+        }
+      })
+    },
+    selectquery(data) {
+      let param = {
+        uniname: this.formname,
+        activeflag: false, // 新增加的属性，默认为false
+        editshow: false, // 新增加的属性，默认为false
+        other: this.querysi, // 新增加的属性，默认为false
+        label: '',
+        value: '',
+        type: data,
+        position: {
+          width: '',
+          height: '',
+          top: '',
+          left: ''
+        },
+        key: `querys${this.querysi}`,
+        sql: '',
+        uniflag: this.$route.params.id,
+        paramtype: 'query'
+      }
+      let val = Object.assign({}, param, {
+        position: JSON.stringify(param.position),
+      })
+      let that = this;
+      dragComponentSingle(val).then((res) => {
+        if (res.status === 200) {
+          param = Object.assign(param, {
+            uniname: res.data.uniname,
+            dragid: res.data.dragid,
+            id: res.data.id,
+            style: res.data.style
+          });
+          that.querys.push(param);
+          that.$nextTick(() => {
+            that.initposition('querys');
+            let dragDom = that.dragDom = new Drag();
+            dragDom.listenevent(that);
+            that.querysi++;
+          })
+        }
+      })
+    },
+    selecttext(data) {
+      let param = {
+        uniname: this.formname,
+        activeflag: false, // 新增加的属性，默认为false
+        editshow: false, // 新增加的属性，默认为false
+        other: this.texti, // 新增加的属性，默认为false
+        data: '',
+        sql: '',
+        type: 'word',
+        position: {
+          width: '',
+          height: '',
+          top: '',
+          left: ''
+        },
+        key: `text${this.texti}`,
+        paramtype: 'text',
+        uniflag: this.$route.params.id,
+      };
+      let val = Object.assign({}, param, {
+        position: JSON.stringify(param.position),
+      })
+      let that = this;
+      dragComponentSingle(val).then((res) => {
+        if (res.status === 200) {
+          param = Object.assign(param, {
+            uniname: res.data.uniname,
+            dragid: res.data.dragid,
+            id: res.data.id,
+            style: res.data.style
+          });
+          that.text.push(param);
+          that.$nextTick(() => {
+            that.initposition('text');
+            let dragDom = that.dragDom = new Drag();
+            dragDom.listenevent(that);
+            that.texti++;
+          })
+        }
+      })
+    },
+    selecttable(data) {
+      let param = {
+        uniname: this.formname,
+        title: '',
+        activeflag: false,
+        editshow: false,
+        other: this.listi,
+        data: {
+          rows: [],
+          cols: [],
+          total: 0,
+          offset: 1,
+          pageSize: 10,
+        },
+        sql: '',
+        position: {
+          width: '',
+          height: '',
+          top: '',
+          left: ''
+        },
+        key: `list${this.listi}`,
+        type: 'list',
+        paramtype: 'list'
+      }
+      let val = Object.assign({}, param, {
+        position: JSON.stringify(param.position),
+        data: JSON.stringify(param.data),
+      })
+      let that = this;
+      dragComponentSingle(val).then((res) => {
+        if (res.status === 200) {
+          // 此时要注意设置rows和data
+          param = Object.assign(param, {
+            value: res.data.value,
+            uniname: res.data.uniname,
+            dragid: res.data.dragid,
+            id: res.data.id,
+            label: res.data.label,
+            style: res.data.style,
+          });
+          this.list.push(param);
+          that.$nextTick(() => {
+            that.initposition('list');
+            let dragDom = that.dragDom = new Drag();
+            dragDom.listenevent(that);
+            dragDom.dragzoom(`listzoom${this.listi}`, `list${this.listi}`);
+            that.listi++;
+          })
+        }
+      })
+    },
+    // 新增组件设置初始位置
+    initposition(type) {
+      // console.log('initposition', type);
+      let boxwidth = $('#dragbox').width();
+      let boxheight = $('#dragbox').height();
+      let inittop;
+      let initleft = '1.5%';
+      let initwidth;
+      let left;
+      let top;
+      if (type === 'querys') {
+        inittop = '1.5%';
+        initwidth = 200;
+      } else if (type === 'text') {
+        inittop = '15%';
+        initwidth = 200;
+      } else if (type === 'charts') {
+        inittop = '20%';
+        initwidth = 350;
+      } else if (type === 'list') {
+        inittop = '20%';
+        initwidth = 200;
+      }
+      // 找到当前页面left最大的值（ps: 更智能的位置待优化的算法，有方案，具体实现中的问题暂时还没找到解决办法）
+      if (this[type].length > 1) {
+        let preleft = (((this[type][this[type].length - 2].position.left).replace('%', '')) / 100) * boxwidth + $(`#${this[type][this[type].length - 2].key}`).width();
+        let pretop = this[type][this[type].length - 2].position.top;
+        // console.log('this[type][this[type].length - 2]', this[type][this[type].length - 2]);
+        if ((boxwidth - preleft) > initwidth) {
+          left = (preleft + 100) * 100 / boxwidth + '%';
+          top = pretop;
+        } else {
+          left = '1%';
+          top = ((pretop.replace('%', '') / 100) * boxheight + $(`#${this[type][this[type].length - 2].key}`).height() + 10) * 100 / boxheight + '%';
+        }
+        this[type][this[type].length - 1].position.left = left;
+        this[type][this[type].length - 1].position.top = top;
+        $(`#${this[type][this[type].length - 1].key}`).css({
+          left: left,
+          top: top
+        })
+      } else {
+        this[type][this[type].length - 1].position.left = initleft;
+        this[type][this[type].length - 1].position.top = inittop;
+        $(`#${this[type][this[type].length - 1].key}`).css({
+          left: initleft,
+          top: inittop
+        })
+      }
+    },
+    // 删除节点
+    delquery(index, dragid) {
+      delDragComponentSingle(dragid).then((res) => {
+        if (res.status === 200) {
+          this.querys.splice(index, 1);
+        }
+      })
+    },
+    // 删除图形
+    delcharts(index, dragid) {
+      delDragComponentSingle(dragid).then((res) => {
+        if (res.status === 200) {
+          this.charts.splice(index, 1);
+        }
+      })
+    },
+    // 删除文字
+    deltext(index, dragid) {
+      delDragComponentSingle(dragid).then((res) => {
+        if (res.status === 200) {
+          this.text.splice(index, 1);
+        }
+      })
+    },
+    dellist(index, dragid) {
+      delDragComponentSingle(dragid).then((res) => {
+        if (res.status === 200) {
+          this.list.splice(index, 1);
+        }
+      })
+    },
+    // 修改图形函数
+    submitForm(item, index) {
+      this.charts[index].editshow = false;
+      let param = JSON.parse(JSON.stringify(item));
+      param.data = JSON.stringify(item.data);
+      param.position = JSON.stringify(item.position);
+      param.sql = JSON.stringify(item.sql);
+      editDragComponent(param).then((res) => {
+        // console.log('res', res);
+        if (res.status === 200) {
+          let series;
+          for (let item in res.data) {
+            if (param.type === 'pie') {
+              series = [{
+                name: res.data[item].z[0],
+                type: 'pie',
+                data: res.data[item].y[0].map((yitem, index) => {
+                  return ({ value: yitem, name: res.data[item].x[index] })
+                }),
+              }]
+              this.charts[index].option.legend.data = res.data[item].x;
+              this.charts[index].option.xAxis[0].show = false;
+              this.charts[index].option.yAxis.show = false;
+              this.charts[index].option.series = JSON.parse(JSON.stringify(series));
+            } else if (param.type === 'bar' || param.type === 'line') {
+              if (res.data[item].y.length === 1) {
+                series = [{
+                  type: this.charts[index].type,
+                  data: res.data[item].y[0],
+                }]
+              } else if (res.data[item].y.length === 0) {
+                series = [];
+              } else if (res.data[item].y.length > 1) {
+                series = res.data[item].y.map((items, i) => {
+                  return {
+                    name: res.data[item].z[i],
+                    type: this.charts[index].type,
+                    data: items
+                  }
+                })
+              }
+              this.charts[index].option.xAxis[0].data = res.data[item].x;
+              this.charts[index].option.legend.data = res.data[item].z;
+              this.charts[index].option.series = JSON.parse(JSON.stringify(series));
+            }
+          }
+        }
+      })
+    },
+    // 修改查询条件函数
+    submitquery(item, index) {
+      // console.log('index', index);
+      this.querys[index].editshow = false;
+      // console.log('item', item);
+      let param = JSON.parse(JSON.stringify(item));
+      param.position = JSON.stringify(item.position);
+      editDragComponent(param).then((res) => {
+        if (res.status === 200) {
+          this.querys[index].option = res.data.querylist[0].option;
+          this.querys[index].value = res.data.querylist[0].value;
+        }
+      })
+    },
+    // 修改文本
+    submittext(item, index) {
+      // console.log('item', item);
+      // console.log('index', index);
+      this.formname = item.data;
+      if (item.position.type === 'formname') {
+        for (let item of this.text) {
+          item.uniname = this.formname;
+        }
+        for (let item of this.querys) {
+          item.uniname = this.formname;
+        }
+        for (let item of this.charts) {
+          item.uniname = this.formname;
+        }
+        this.text[index].editshow = true;
+        let param = JSON.parse(JSON.stringify(item));
+        param.position = JSON.stringify(item.position);
+        editDragComponent(param).then((res) => {
+          if (res.status === 200) { }
+        }).then(() => {
+          this.savetemplate();
+        })
+      } else {
+        this.text[index].editshow = true;
+        let param = JSON.parse(JSON.stringify(item));
+        param.position = JSON.stringify(item.position);
+        editDragComponent(param).then((res) => {
+          if (res.status === 200) { }
+        })
+      }
+    },
+    // 待完成
+    submitFormlist(item, index) {
+      this.list[index].editshow = false;
+      let param = JSON.parse(JSON.stringify(item));
+      param.data = JSON.stringify(item.data);
+      param.position = JSON.stringify(item.position);
+      param.sql = item.sql;
+      editDragComponent(param).then((res) => {
+        // console.log('res', res);
+        if (res.status === 200) {
+          // 设置数据
+          for (let item in res.data) {
+            this.list[index].data.cols = res.data[item];
+          }
+        }
+      })
+    },
+    // 点击修改筛选条件
+    editquery(item, index) {
+      this.querys[index].editshow = true;
+      this.temparam[item.key] = Object.assign({}, JSON.parse(JSON.stringify(item)), { editshow: false });
+    },
+    // 点击修改筛选文本
+    edittext(item, index) {
+      this.text[index].editshow = false;
+      this.temparam[item.key] = Object.assign({}, JSON.parse(JSON.stringify(item)), { editshow: false });
+    },
+    // 点击修改图形
+    editcharts(item, index) {
+      this.charts[index].editshow = true;
+      this.temparam[item.key] = Object.assign({}, JSON.parse(JSON.stringify(item)), { editshow: false });
+    },
+    editlist(item, index) {
+      this.list[index].editshow = true;
+      this.temparam[item.key] = Object.assign({}, JSON.parse(JSON.stringify(item)), { editshow: false });
+    },
+    // 取消筛选条件
+    resetquery(item, index) {
+      this.querys[index].label = this.temparam[item.key].label;
+      this.querys[index].sql = this.temparam[item.key].sql;
+      this.querys[index].editshow = false;
+    },
+    // 取消图形
+    resetForm(item, index) {
+      this.charts[index].editshow = false;
+      this.charts[index].label = this.temparam[item.key].label;
+      this.charts[index].sql = this.temparam[item.key].sql;
+    },
+    resetFormlist(item, index) {
+      this.list[index].editshow = false;
+      this.list[index].label = this.temparam[item.key].label;
+      this.list[index].sql = this.temparam[item.key].sql;
+      this.list[index].title = this.temparam[item.key].title;
+    },
+    // 改变位置后进行数据库的保存
+    setedit(type, index) {
+      // console.log('type', type);
+      if (type === 'querys') {
+        this.submitquery(this.querys[index], index);
+      } else if (type === 'charts') {
+        this.submitForm(this.charts[index], index);
+      } else if (type === 'list') {
+        this.submitFormlist(this.list[index], index);
+      } else {
+        this.submittext(this.text[index], index);
+      }
+    },
+    EditAllDragComponent() {
+      editAllDragComponent.then(() => { })
+    },
+    // 如果不想在继续下去、可以选择取消，后台会删除该条记录
+    delect() {
+      delDragComponent(this.$route.params.id).then((res) => {
+        if (res.status === 200) {
+          this.$router.go(-1);
+        }
+      })
+    },
+  },
+  watch: {},
+}
+class Drag {
+  constructor() {
+    this.dragdoms = [];
+    this.context = null;
+    this.boxattr = {
+      boxwidth: 0,
+      boxheight: 0,
+    };
+    this.initdrag('.dragdom', {
+      containment: '.dragbox',
+      handle: '.handle',
+    });
+  }
+  // 初始化宽高
+  initbox() {
+    this.boxattr.boxwidth = $('#dragbox').width();
+    this.boxattr.boxheight = $('#dragbox').height();
+  }
+  initdrag(classname, box) {
+    // 给组件绑定事件
+    this.initbox();
+    let dragDom = document.querySelectorAll(classname);
+    for (let item of dragDom) {
+      let dragdom = new Draggabilly(item, box);
+      this.dragdoms.push(dragdom);
+    }
+  }
+  // 缩放
+  dragzoom(dragid, boxid, reschart) {
+    this.initbox();
+    let that = this.context;
+    var posix;
+    var item = document.getElementById(dragid);
+    var itembox = document.getElementById(boxid);
+    // 因为现在没有列表所以暂时注释该代码
+    // let initboxmsg = {
+    //     height: $(`#${boxid} .el-table`).height(),
+    //     width: $(itembox).width(),
+    //     padding: 7,
+    // }
+    $(item).mousedown(function (e) {
+      posix = {
+        'w': $(itembox).width(),
+        'h': $(itembox).height(),
+        'x': e.pageX,
+        'y': e.pageY,
+      };
+      $('.dragdom').css('z-index', 4);
+      $(`.${boxid}`).css('z-index', 5);
+      $(itembox).addClass('activedom');
+      // this.upindex('.dragdom', `.${boxid}`);
+      // 在支持 setCapture 做些东东
+      if (item.setCapture) {
+        // 捕捉焦点
+        item.setCapture();
+        // 设置事件
+        item.onmousemove = function (ev) {
+          mouseMove(ev || event)
+        }
+        item.onmouseup = mouseUp
+      } else {
+        // 绑定事件
+        $(document).bind('mousemove', mouseMove).bind('mouseup', mouseUp)
+      }
+      // 防止默认事件发生
+      e.preventDefault()
+    })
+    // 移动事件
+    function mouseMove(e) {
+      // 获得屏幕的大小，来空间最大边界值，宽度进行控制，高度可不进行控制
+      var pagewidth = $('.dragbox').width();
+      // 计算并设置
+      // (Math.min(Math.max(30, e.pageX - posix.x + posix.w), pagewidth - 10)) / pagewidth + '%',
+      $(itembox).css({
+        'width': (Math.min(Math.max(30, e.pageX - posix.x + posix.w), pagewidth - 10)) / pagewidth * 100 + '%',
+        'height': Math.max(30, e.pageY - posix.y + posix.h)
+      })
+      let type = $(itembox).attr('type');
+      let index = $(itembox).attr('dragindex');
+      let width = (Math.min(Math.max(30, e.pageX - posix.x + posix.w), pagewidth - 10)) / pagewidth * 100 + '%';
+      let height = Math.max(30, e.pageY - posix.y + posix.h);
+      that.setpositiionbox(type, index, width, height);
+      if (reschart !== undefined) {
+        // 如果是图像就调用图形改变大小的函数，进行重绘大小
+        // 此页面为非真实图像，所以暂时注释此段代码
+        reschart[0].resize();
+      } else {
+        // console.log('现在的padding', $(nodeclassname).css('paddingTop'));
+        // 如果是列表就改变一些样式来达到一种缩小的视觉效果
+        // 现在先不做表格，所以暂时把此段代码注释
+        // let nodeclassname = `#${boxid} td`;
+        // let nowpadd = (($(`#${boxid} .el-table`).height() - initboxmsg.height) / 20) + initboxmsg.padding;
+        // $(nodeclassname).css({
+        //     'padding': `${nowpadd}px 0`
+        // })
+      }
+    }
+    // 停止事件
+    function mouseUp(e) {
+      // 在支持 releaseCapture 做些东东
+      if (item.releaseCapture) {
+        // 释放焦点
+        item.releaseCapture();
+        // 移除事件
+        item.onmousemove = item.onmouseup = null
+      } else {
+        // 卸载事件
+        $(itembox).removeClass('activedom');
+        $(document).unbind('mousemove', mouseMove).unbind('mouseup', mouseUp)
+      }
+    }
+  }
+  // 修改点击时的优先级,鼠标按下时，被点击元素的优先级升高，其他元素的优先级降低
+  // 当点击释放的时候，被点击元素的优先级降低
+  upindex(allclassname, clickdom) {
+    $(allclassname).css('z-index', 4);
+    $(clickdom).css('z-index', 5);
+  }
+  // 暂时先不用
+  pointerdown(e, pointer, element) {
+    $(element).addClass('activedom');
+  }
+  dragstart(e, pointer, element) {
+    this.upindex('.dragdom', element);
+  }
+  // 窗口发生变化时更新宽高
+  windowReSize() {
+    this.initbox();
+  }
+  // 把left计算成百分比
+  Calculatepositionpercentage(dom) {
+    $(dom).css({
+      'left': (($(dom).position().left) * 100 / (this.boxattr.boxwidth)) + '%',
+      'top': (($(dom).position().top) * 100 / (this.boxattr.boxheight)) + '%',
+    });
+    $(dom).removeClass('activedom');
+  }
+  dragmove(e, pointer, moveVector, element) { }
+  dragend(e, pointer, element) {
+    // 记录位置
+    let type = $(element).attr('type');
+    let index = $(element).attr('dragindex');
+    this.initbox();
+    let left = (($(element).position().left) * 100 / (this.boxattr.boxwidth)) + '%';
+    let top = (($(element).position().top) * 100 / (this.boxattr.boxheight)) + '%';
+    // 设置位置
+    this.Calculatepositionpercentage(element);
+    this.context.setpositiondata(type, index, left, top);
+    this.context.setedit(type, index)
+  }
+  listenevent(that) {
+    this.context = that;
+    for (let item of this.dragdoms) {
+      let $element = item.element;
+      item.on('dragStart', (event, pointer) => {
+        this.dragstart(event, pointer, $element);
+      });
+      item.on('dragMove', (event, pointer, moveVector) => {
+        this.dragmove(event, pointer, moveVector, $element);
+      });
+      item.on('dragEnd', (event, pointer) => {
+        this.dragend(event, pointer, $element);
+      });
+      item.on('pointerDown', (event, pointer) => {
+        this.pointerdown(event, pointer, $element);
+      })
+    }
+  }
+}
+</script>

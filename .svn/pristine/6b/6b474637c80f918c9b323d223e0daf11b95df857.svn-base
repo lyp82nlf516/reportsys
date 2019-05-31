@@ -1,0 +1,411 @@
+<template>
+  <div class="configfieldbox" id="configfieldbox">
+    <div class="busconfigfield" v-if="busShow">
+      <div class="configfieldTop">
+        <div class="fieldtreebox">
+          <div class="filterinput">
+            <el-input placeholder="输入关键字进行过滤" v-model="filterText" @keyup.native.enter="filterFildone">
+              <i slot="suffix" class="el-input__icon el-icon-search" @click="filterFildone"></i>
+            </el-input>
+          </div>
+          <div class="fieldtree">
+            <el-tree class="filter-tree" node-key="allkey" :default-checked-keys="checkNodes" show-checkbox :data="fielddata" :props="defaultProps" :filter-node-method="filterNode" ref="treefield" @check-change="checktree"></el-tree>
+          </div>
+        </div>
+        <div class="tablebox">
+          <el-table :data="tableData" height="400">
+            <el-table-column prop="columncode" label="字段" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="columnname" label="中文名">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.columnname" placeholder="请输入内容" class="columnname"></el-input>
+              </template>
+            </el-table-column>
+            <el-table-column prop="istitle" label="是否列表显示">
+              <template slot-scope="scope">
+                <el-switch v-model="scope.row.istitle" active-text="" inactive-text="" @change="changetitle(scope.row)"> </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="queryrule" label="查询类型">
+              <template slot-scope="scope">
+                <el-select v-model="scope.row.queryrule" placeholder="请选择" :disabled="!scope.row.istitle">
+                  <el-option v-for="item in optionz" :key="item.value" :label="item.label" :value="item.value">
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="fixedvalue" label="取值">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.fixedvalue" placeholder="请输入内容" style="width:100%" :disabled="!scope.row.istitle"></el-input>
+              </template>
+            </el-table-column>
+            <el-table-column prop="isquery" class="div" label="是否是查询条件">
+              <template slot-scope="scope">
+                <el-switch v-model="scope.row.isquery" active-text="" inactive-text="" @change="changequery(scope.row)"> </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="querygroup" label="组件类型">
+              <template slot-scope="scope">
+                <el-select v-model="scope.row.querygroup" :placeholder="queryDefault">
+                  <el-option v-for="item in optionselect" :key="item.value" :label="item.label" :value="item.value">
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="queryvalue" label="组件值">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.queryvalue" placeholder="请输入内容" style="width:100%" :disabled="!scope.row.isquery"></el-input>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+      <div class="btnbox">
+        <el-button type="primary" @click="SaveTableColumn">保存</el-button>
+      </div>
+    </div>
+  </div>
+</template>
+<style lang="scss">
+#configfieldbox {
+  width: 100%;
+  height: calc(100% - 10px);
+  background-color: #fff;
+  margin-top: 10px;
+  .busconfigfield {
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+  }
+  .configfieldTop {
+    width: 100%;
+    height: 85%;
+    overflow: auto;
+    .fieldtreebox {
+      width: 300px;
+      height: calc(100% - 5px);
+      float: left;
+      .fieldtree {
+        height: calc(100% - 50px);
+        width: calc(100% - 2px);
+        overflow: auto;
+        border: 1px solid #dfe6ec;
+        border-top: none;
+        padding-top: 10px;
+        .el-checkbox__input.is-checked .el-checkbox__inner {
+          background-color: #6d71ef;
+          border-color: #6d71ef;
+        }
+        .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+          background-color: #6d71ef;
+          border-color: #6d71ef;
+        }
+        .el-tree-node__label {
+          width: calc(100% - 51px);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      .el-tree {
+        border: 0;
+      }
+    }
+    .tablebox {
+      width: calc(100% - 300px);
+      height: calc(100% - 7px);
+      float: left;
+      .el-table {
+        height: 100% !important;
+        color: #1f2d3d;
+        .el-table__footer-wrapper thead div,
+        .el-table__header-wrapper thead div {
+          background-color: #eef1f6;
+          color: #1f2d3d;
+        }
+        .el-input__suffix {
+          right: 9px;
+        }
+        th {
+          background-color: #eef1f6;
+        }
+        .el-input__icon {
+          line-height: 28px;
+        }
+        .cell {
+          padding-left: 14px;
+          padding-right: 14px;
+          .el-input__inner {
+            width: calc(100% - 11px);
+            height: 28px !important;
+            padding: 3px 9px;
+            font-size: 12px;
+          }
+          .el-switch.is-checked .el-switch__core {
+            background-color: #6d71ef;
+            border-color: #6d71ef;
+          }
+        }
+      }
+      .columnname:before {
+        content: "*";
+        color: #ff4949;
+        margin-right: 4px;
+      }
+    }
+  }
+  .btnbox {
+    .el-button {
+      margin: 0 auto;
+      display: block;
+      background: #6d71ef;
+      border-color: #6d71ef;
+      padding: 7px 11px;
+    }
+    .el-button:focus,
+    .el-button:hover {
+      background: rgba(123, 126, 255, 0.9);
+      border-color: rgba(123, 126, 255, 0.9);
+    }
+    margin-top: 15px;
+    height: calc(15% - 15px);
+  }
+}
+</style>
+<script>
+import {
+  getTableColumnsByKey,
+  saveTableColumn
+} from '@/services/query';
+export default {
+  data() {
+    return {
+      busShow: true,
+      msgShow: false,
+      fielddata: [],
+      defaultProps: {
+        children: 'children',
+        label: 'value'
+      }, // 字段树展示时要展示的变量
+      queryDefault: '',
+      id: this.$route.params.id,
+      tableData: [],
+      checkNodes: [],
+      initfielddata: [],
+      optionz: [{
+        value: '>=',
+        label: '>='
+      }, {
+        value: '>',
+        label: '>'
+      }, {
+        value: '<=',
+        label: '<='
+      }, {
+        value: '<',
+        label: '<'
+      }, {
+        value: '=',
+        label: '='
+      }, {
+        value: '区间',
+        label: '区间'
+      }, {
+        value: 'in',
+        label: 'in'
+      }, {
+        value: 'like',
+        label: 'like'
+      }],
+      optionselect: [{
+        value: 'select',
+        label: '下拉单选'
+      }, {
+        value: 'selectmultiple',
+        label: '下拉多选'
+      }, {
+        value: 'input',
+        label: '输入框'
+      }, {
+        value: 'cascader',
+        label: '级联'
+      }, {
+        value: 'daterange',
+        label: '时间范围'
+      }, {
+        value: 'date',
+        label: '时间'
+      }],
+      filterText: '',
+    }
+  },
+  props: ['parentmsg'],
+  mounted() {
+    this.GetTableColumnsByKey();
+  },
+  created() {
+    this.queryDefault = this.optionselect[2].label;
+    if (this.parentmsg !== undefined) {
+      if (this.parentmsg.fieldData.length > 0) {
+        this.fielddata = this.parentmsg.fieldData;
+        this.tableData = this.parentmsg.tableNewData;
+        this.checkNodes = this.parentmsg.checkAllNodes;
+      } else {
+        // console.log('null', this.parentmsg);
+      }
+    }
+  },
+  methods: {
+    // 得到字段树列表
+    GetTableColumnsByKey() {
+      // console.log('this.id', this.id)
+      getTableColumnsByKey(this.id).then((res) => {
+        // 因为不同的表下的字段的key 可能相同，所以需要手动定义一个唯一的key来作为是被标志，用来在回写数据的时候用到
+        if (res.data !== undefined) {
+          this.initfielddata = JSON.parse(JSON.stringify(res.data));
+          for (let j in this.initfielddata) {
+            for (let i in this.initfielddata[j]) {
+              this.initfielddata[j][i].allkey = `${j}${'.'}${this.initfielddata[j][i].key}`;
+            }
+          }
+          this.fielddata = this.createtreedata(this.initfielddata);
+          // console.log('单表列表数据：', res)
+        }
+      })
+    },
+    // 保存字段
+    SaveTableColumn() {
+      let param = JSON.parse(JSON.stringify(this.tableData));
+      for (let item of param) {
+        delete item.allkey;
+      }
+      saveTableColumn(param).then((res) => {
+        if (res.status === 200) {
+          // // 修改成功需要执行的操作
+          const arr = [];
+          for (let i in param) {
+            arr.push(param[i].columnname);
+          }
+          const arrTest = new Array(arr);
+          if (this.tableData.length === 0) {
+            this.$message('至少选择一个字段！');
+          } else if (this.tableData.length > 0) {
+            if (this.IsInArray(arrTest, '')) {
+              this.$message('中文名称不能为空！');
+            } else {
+              if (this.parentmsg !== undefined) {
+                this.$router.push({
+                  path: `/tablefilder/${this.parentmsg.ids}`
+                });
+              } else {
+                this.$router.push({
+                  path: `/tablefilder/${this.id}`
+                });
+              }
+            }
+          }
+        }
+      })
+    },
+    // 判断是否为空
+    IsInArray(arr, val) {
+      const testStr = ',' + arr.join(',') + ',';
+      return testStr.indexOf(',' + val + ',') !== -1;
+    },
+    // 把返回的字段数据生成tree数据
+    createtreedata(array) {
+      let cols = [];
+      for (let i in array) {
+        let coltree = {
+          key: i,
+          allkey: i,
+          value: `${i}表的字段:`,
+          type: 'table',
+          children: array[i]
+        };
+        cols.push(coltree);
+      }
+      return cols;
+    },
+    checktree(data, checked, indeterminate) {
+      // console.log('checktree：', data, checked, indeterminate);
+      let tabledata = JSON.parse(JSON.stringify(this.$refs.treefield.getCheckedNodes()));
+      let tableall = [];
+      for (let item of tabledata) {
+        let flag = true;
+        let havePro = item.hasOwnProperty('children');
+        for (let j in this.tableData) {
+          if (item.allkey === this.tableData[j].allkey && this.tableData[j].columncode !== undefined) {
+            flag = false;
+            tableall.push(JSON.parse(JSON.stringify(this.tableData[j])));
+          }
+        }
+        if (flag && havePro === false) {
+          if (this.parentmsg !== undefined) {
+            if (this.parentmsg.fieldData.length > 0) {
+              item = {
+                columncode: item.allkey,
+                columnname: '',
+                istitle: true,
+                queryrule: '',
+                fixedvalue: '',
+                isquery: false,
+                querygroup: 'input',
+                confid: this.parentmsg.ids,
+                allkey: item.allkey,
+                queryvalue: '',
+              }
+            } else {
+              // console.log('null', this.parentmsg);
+            }
+          } else {
+            item = {
+              columncode: item.allkey,
+              columnname: '',
+              istitle: true,
+              queryrule: '',
+              fixedvalue: '',
+              isquery: false,
+              querygroup: 'input',
+              confid: this.id,
+              allkey: item.allkey,
+              queryvalue: '',
+            }
+          }
+          tableall.push(item);
+          this.checkNodes.push(item.allkey);
+        }
+      }
+      this.tableData = tableall;
+    },
+    // 修改是否显示表头
+    changetitle(row) {
+      // 如果是false就把值变成默认值
+      if (!row.istitle) {
+        row.queryrule = '';
+        row.fixedvalue = '';
+      }
+    },
+    // 修改是否作为筛选条件
+    changequery(row) {
+      // 如果是false就把值变成默认值
+      if (!row.isquery) {
+        row.querygroup = 'input';
+        row.queryvalue = '';
+      }
+    },
+    // 筛选字段
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.value.indexOf(value) !== -1;
+    },
+    filterFildone() {
+      this.$refs.treefield.filter(this.filterText);
+    },
+  },
+  watch: {
+    filterText(val) {
+      this.$refs.treefield.filter(val);
+    },
+  },
+}
+</script>

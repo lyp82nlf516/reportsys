@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>报表数据统计平台</title><style>html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }</style><link href=/Intelligent-technology/resources/static/css/app.35ad80f47a5763a9d00ce7d842e856cf.css rel=stylesheet></head><body><div id=app></div><script type=text/javascript src=/Intelligent-technology/resources/static/js/manifest.1ed04d6356b1f145fc35.js></script><script type=text/javascript src=/Intelligent-technology/resources/static/js/app.c77bbd8bac1e3d29461b.js></script></body></html>
